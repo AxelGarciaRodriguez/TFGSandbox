@@ -5,8 +5,8 @@ from functools import reduce
 from typing import List
 
 import numpy as np
-from pykinect2 import PyKinectV2
-from pykinect2.PyKinectRuntime import PyKinectRuntime
+from kinect_module import PyKinectV2
+from kinect_module import PyKinectRuntime
 
 from literals import KINECT_MAX_CHECKS_CONNECTION, KINECT_SECONDS_BETWEEN_CHECK_CONNECTION
 from kinect_controller.KinectLock import lock
@@ -25,7 +25,8 @@ class KinectController(object):
         kinect_frames_values = [kinect_frame.value for kinect_frame in kinect_frames]
 
         # Initiate PyKinect2 runtime
-        self.kinect = PyKinectRuntime(kinect_frames_values[0]) if len(kinect_frames_values) == 1 else PyKinectRuntime(
+        self.kinect = PyKinectRuntime.PyKinectRuntime(kinect_frames_values[0]) if len(
+            kinect_frames_values) == 1 else PyKinectRuntime.PyKinectRuntime(
             reduce(lambda x, y: x | y, kinect_frames_values))
 
         # Test Connection
@@ -33,7 +34,7 @@ class KinectController(object):
             time.sleep(KINECT_SECONDS_BETWEEN_CHECK_CONNECTION)
             if self.check_if_new_image(kinect_frames[0]):
                 break
-            logging.info(
+            logging.warning(
                 f"Retrying connection with Kinect camera, {KINECT_MAX_CHECKS_CONNECTION - i - 1} retries available")
         else:
             raise RuntimeError("Cannot detect Kinect Camera")
