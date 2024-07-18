@@ -4,6 +4,7 @@ import time
 from functools import reduce
 from typing import List
 
+import cv2
 import numpy as np
 from kinect_module import PyKinectV2
 from kinect_module import PyKinectRuntime
@@ -80,4 +81,9 @@ class KinectController(object):
 
         return image
 
+    # endregion
+
+    # region Kinect Management
+    def close(self):
+        self.kinect.close()
     # endregion

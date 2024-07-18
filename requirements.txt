@@ -2,3 +2,4 @@ comtypes==1.4.5
 numpy==1.24.4
 opencv-python==4.10.0.84
 screeninfo==0.8.1
+pillow==10.4.0

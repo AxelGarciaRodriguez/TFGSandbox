@@ -1,0 +1,157 @@
+import tkinter as tk
+from copy import deepcopy
+from tkinter import messagebox
+
+from PIL import Image, ImageTk
+
+from kinect_controller.KinectController import KinectFrames
+
+
+class MoveProjectorPointsInterface:
+    def __init__(self, window, image_processor_kinect, image_processor_projector, kinect, window_size=(960, 540),
+                 displacement_value=20):
+        # IMPORTANT VARIABLES
+        self.points = []
+        self.kinect_points = kinect.kinect_cords
+        self.kinect = kinect
+        self.image_processor_kinect = image_processor_kinect
+        self.image_processor_projector = image_processor_projector
+        self.displacement_value = displacement_value
+        self.window_size = window_size
+
+        self.actual_point_kinect = None
+        self.actual_point_projector = None
+        self.actual_index = 0
+
+        # Initialize window
+        self.window = window
+        self.window.title("Calibración Proyector")
+
+        # Instantiate canvas
+        self.canvas = tk.Canvas(window, width=window_size[0], height=window_size[1])
+        self.canvas.pack()
+
+        # CREATE BINDS AND ACCEPT BUTTON
+        self.window.bind("<KeyPress-Up>", self.move_up)
+        self.window.bind("<KeyPress-Down>", self.move_down)
+        self.window.bind("<KeyPress-Left>", self.move_left)
+        self.window.bind("<KeyPress-Right>", self.move_right)
+
+        self.accept_button = tk.Button(window, text="Siguiente", command=self.accept_point)
+        self.accept_button.pack()
+
+        self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.process_interrupted = False
+
+        # SHOW KINECT IMAGE
+        self.image = None
+        self.photo = None
+        self.photo_obj = None
+        self.show_kinect_image()
+
+        # GENERATE KINECT POINT IN CANVAS
+        self.point = None
+        self.get_kinect_point()
+        self.draw_kinect_point()
+
+        # GENERATE PROJECTOR POINT
+        self.generate_project_point()
+        self.draw_projector_point()
+
+        # UPDATE IMAGE BACKGROUND LOOP
+        self.update_background_loop()
+
+    def on_closing(self):
+        if messagebox.askokcancel("Cerrar", "¿Seguro que quieres cerrar la ventana? El proceso terminará."):
+            self.process_interrupted = True
+            self.window.destroy()
+
+    def get_kinect_point(self):
+        self.actual_point_kinect = self.kinect_points[self.actual_index]
+
+    def draw_kinect_point(self):
+        # CANVAS
+        kinect_point_scaled = (
+            (self.actual_point_kinect[0] / self.image_processor_kinect.width * self.window_size[0]),
+            (self.actual_point_kinect[1] / self.image_processor_kinect.height * self.window_size[1])
+        )
+        self.canvas.delete(self.point)
+
+        self.point = self.canvas.create_oval(kinect_point_scaled[0] - 2, kinect_point_scaled[1] - 2,
+                                             kinect_point_scaled[0] + 2, kinect_point_scaled[1] + 2,
+                                             fill="red")
+        self.canvas.tag_raise(self.point)
+
+    def generate_project_point(self):
+        self.actual_point_projector = (
+            self.image_processor_projector.height // 2, self.image_processor_projector.width // 2
+        )
+
+    def draw_projector_point(self):
+        # IMAGE BASE
+        self.image_processor_projector.restore_image()
+        self.image_processor_projector.draw_point(point=self.actual_point_projector, radius=6, color=(255, 255, 255))
+
+    def save_project_point(self):
+        self.points.append(deepcopy(self.actual_point_projector))
+
+    def update_background_loop(self):
+        if self.kinect.check_if_new_image(kinect_frame=KinectFrames.COLOR):
+            self.image_processor_kinect = self.kinect.get_image_processor(kinect_frame=KinectFrames.COLOR)
+            self.show_kinect_image()
+
+        self.window.after(30, self.update_background_loop)
+
+    def show_kinect_image(self):
+        self.image = Image.fromarray(self.image_processor_kinect.image)
+        self.image = self.image.resize(self.window_size)
+        self.photo = ImageTk.PhotoImage(self.image)
+        if self.photo_obj:
+            self.canvas.itemconfig(self.photo_obj, image=self.photo)
+        else:
+            self.photo_obj = self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo)
+
+    def accept_point(self):
+        # SAVE PROJECTOR POINT
+        self.save_project_point()
+
+        # UPDATE ACTUAL INDEX
+        self.actual_index += 1
+
+        if self.actual_index == len(self.kinect_points):
+            messagebox.showinfo("All points calibrated", "Todos los puntos han sido calibrados.")
+            self.accept_polygon_after()
+        else:
+            # GET NEXT KINECT POINT
+            self.get_kinect_point()
+            self.draw_kinect_point()
+
+            # GENERATE NEW PROJECTOR POINT
+            self.generate_project_point()
+            self.draw_projector_point()
+
+    def move_up(self, event):
+        self.actual_point_projector = (
+            self.actual_point_projector[0], self.actual_point_projector[1] - self.displacement_value)
+        self.draw_projector_point()
+
+    def move_down(self, event):
+        self.actual_point_projector = (
+            self.actual_point_projector[0], self.actual_point_projector[1] + self.displacement_value)
+        self.draw_projector_point()
+
+    def move_left(self, event):
+        self.actual_point_projector = (
+            self.actual_point_projector[0] + self.displacement_value, self.actual_point_projector[1])
+        self.draw_projector_point()
+
+    def move_right(self, event):
+        self.actual_point_projector = (
+            self.actual_point_projector[0] - self.displacement_value, self.actual_point_projector[1])
+        self.draw_projector_point()
+
+    def accept_polygon(self):
+        self.window.destroy()
+
+    def accept_polygon_after(self):
+        self.window.after(0, self.accept_polygon())

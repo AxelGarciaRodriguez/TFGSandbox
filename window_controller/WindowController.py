@@ -47,11 +47,12 @@ class WindowController(threading.Thread):
                     # Lock image updates
                     self.show_image(self.image)
 
-            key = cv2.waitKey(0) & 0xFF
+            key = cv2.waitKey(1) & 0xFF
             if key == ord('q') or cv2.getWindowProperty(self.window_name, cv2.WND_PROP_VISIBLE) < 1:
                 self.close_window()
 
-        cv2.destroyWindow(self.window_name)
+        if cv2.getWindowProperty(self.window_name, cv2.WND_PROP_VISIBLE):
+            cv2.destroyWindow(self.window_name)
 
     def create_window(self):
         if self.fullscreen:
@@ -113,6 +114,12 @@ class WindowController(threading.Thread):
 
         self.validate_inputs()
         self.configure_window()
+
+    def check_if_alive(self):
+        if self.stopped is True:
+            return False
+        else:
+            return True
 
     # region Window Functions
     def add_mouse_callback_function(self, function, params):

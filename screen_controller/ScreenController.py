@@ -11,9 +11,10 @@ class ScreenController(object):
         self.screen_name = screen_name if screen_name else "Default"
         self.width_resolution = width_resolution if width_resolution else None
         self.height_resolution = height_resolution if height_resolution else None
+        self.screen_resolution = (self.width_resolution, self.height_resolution)
         if position and width_resolution and height_resolution:
-            self.screen_cords = generate_cords(initial_position=self.position, width=width_resolution,
-                                               height=height_resolution)
+            self.screen_cords = generate_cords(initial_position=self.position,
+                                               size=(height_resolution, width_resolution))
         else:
             self.screen_cords = None
 
@@ -86,3 +87,9 @@ class ScreenController(object):
         for active_window in self.active_window.values():
             active_window.close_window()
         self.active_window.clear()
+
+    def check_if_window_active(self, window_name):
+        if window_name in self.active_window.keys():
+            return self.active_window[window_name].check_if_alive()
+        else:
+            return False
