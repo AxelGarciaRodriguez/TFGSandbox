@@ -17,7 +17,7 @@ from literals import IMAGE_BASE_PATH, PATTERN_IMAGE_NAME, NOT_FOUND_IMAGE_NAME, 
     KINECT_CAMERA_DISTORSION_VARIABLE, KINECT_CAMERA_ROTATION_VARIABLE, KINECT_CAMERA_TRASLATION_VARIABLE, \
     KINECT_CALIBRATION_PATH, KINECT_CALIBRATION_FILENAME, PROJECTOR_CAMERA_CALIBRATION_VARIABLE, \
     PROJECTOR_CAMERA_DISTORSION_VARIABLE, PROJECTOR_CAMERA_ROTATION_VARIABLE, PROJECTOR_CAMERA_TRASLATION_VARIABLE, \
-    PROJECTOR_CALIBRATION_PATH, PROJECTOR_CALIBRATION_FILENAME
+    PROJECTOR_CALIBRATION_PATH, PROJECTOR_CALIBRATION_FILENAME, IR_IMAGES_KEY
 from utils import generate_relative_path, transform_cords
 
 
@@ -36,7 +36,7 @@ def get_args():
 
 def load_kinect_images(path):
     previous_images = {}
-    for type_image in [RGB_IMAGES_KEY, DEPTH_IMAGES_KEY]:
+    for type_image in [RGB_IMAGES_KEY, DEPTH_IMAGES_KEY, IR_IMAGES_KEY]:
         tmp_kinect_image_path = generate_relative_path([path, type_image])
         if not os.path.exists(tmp_kinect_image_path):
             logging.debug(f"Not found images in path: {tmp_kinect_image_path}")
@@ -53,7 +53,7 @@ def load_kinect_images(path):
 
 def save_kinect_images(path, images_map):
     for image_name, image_map in images_map.items():
-        for type_image in [RGB_IMAGES_KEY, DEPTH_IMAGES_KEY]:
+        for type_image in [RGB_IMAGES_KEY, DEPTH_IMAGES_KEY, IR_IMAGES_KEY]:
             tmp_kinect_image_path = generate_relative_path([path, type_image])
             if not os.path.exists(tmp_kinect_image_path):
                 os.makedirs(tmp_kinect_image_path)
@@ -298,7 +298,7 @@ def main():
     # Initialize Kinect, Principal Screen and Projector Screen
     try:
         principal_screen, projector_screen = selector_screens()
-        kinect = KinectController(kinect_frames=[KinectFrames.COLOR, KinectFrames.DEPTH])
+        kinect = KinectController(kinect_frames=[KinectFrames.COLOR, KinectFrames.DEPTH, KinectFrames.INFRARED])
     except Exception as error:
         logging.error(f"Error trying to instantiate screens/kinect: {error}")
         raise error
