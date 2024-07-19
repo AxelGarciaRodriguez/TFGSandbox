@@ -4,7 +4,6 @@ import time
 from functools import reduce
 from typing import List
 
-import cv2
 import numpy as np
 from kinect_module import PyKinectV2
 from kinect_module import PyKinectRuntime
@@ -16,11 +15,15 @@ from kinect_controller.KinectLock import lock
 class KinectFrames(enum.Enum):
     COLOR = PyKinectV2.FrameSourceTypes_Color
     DEPTH = PyKinectV2.FrameSourceTypes_Depth
+    INFRARED = PyKinectV2.FrameSourceTypes_Infrared
 
 
 class KinectController(object):
     def __init__(self, kinect_frames: List[KinectFrames]):
         logging.info("Initializing Kinect Camera ...")
+
+        # Instantiate values
+        self.kinect = None
 
         # Generate kinect frames list
         kinect_frames_values = [kinect_frame.value for kinect_frame in kinect_frames]
@@ -46,6 +49,8 @@ class KinectController(object):
             return self.kinect.has_new_color_frame()
         elif kinect_frame == KinectFrames.DEPTH:
             return self.kinect.has_new_depth_frame()
+        elif kinect_frame == KinectFrames.INFRARED:
+            return self.kinect.has_new_infrared_frame()
 
         raise ValueError(f"Cannot manage kinect frame {kinect_frame.name} in KinectController wrapper")
 
@@ -56,6 +61,8 @@ class KinectController(object):
                     kinect_frame_obj = self.kinect.get_last_color_frame()
                 elif kinect_frame == KinectFrames.DEPTH:
                     kinect_frame_obj = self.kinect.get_last_depth_frame()
+                elif kinect_frame == KinectFrames.INFRARED:
+                    kinect_frame_obj = self.kinect.get_last_infrared_frame()
                 else:
                     raise ValueError(f"Cannot manage kinect frame {kinect_frame.name} in KinectController wrapper")
 
@@ -76,6 +83,9 @@ class KinectController(object):
         elif kinect_frame == KinectFrames.DEPTH:
             image = frame.reshape((self.kinect.depth_frame_desc.Height, self.kinect.depth_frame_desc.Width)).astype(
                 np.uint16)
+        elif kinect_frame == KinectFrames.INFRARED:
+            image = frame.reshape(
+                (self.kinect.infrared_frame_desc.Height, self.kinect.infrared_frame_desc.Width)).astype(np.uint16)
         else:
             raise ValueError(f"Cannot manage kinect image {kinect_frame.name} in KinectController wrapper")
 
