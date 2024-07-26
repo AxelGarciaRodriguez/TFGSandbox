@@ -12,33 +12,39 @@ class WindowController(threading.Thread):
         super(WindowController, self).__init__()
         self.window_name = window_name
         self.image = image
-        self.width = width
-        self.height = height
         self.position = position
         self.fullscreen = fullscreen
+
+        self.width = width
+        self.height = height
+        self.resolution = (width, height)
 
         # Image Management
         self.image_changed = True
 
         # Window Management
         self.stopped = False
+        self.created = False
 
     def run(self):
         # Lock creation window process
-        with lock:
-            for attempt in range(WINDOW_MAX_RETRIES_CREATION):
-                try:
-                    self.create_window()
-                    self.configure_window()
-                    # First image show
-                    self.image_changed = False
-                    self.show_image(self.image)
-                except Exception as e:
-                    logging.warning(f"Attempt {attempt + 1} creating window {self.window_name} failed: {e}")
-                    if attempt + 1 == WINDOW_MAX_RETRIES_CREATION:
-                        logging.error(f"Failed to create window after {WINDOW_MAX_RETRIES_CREATION} attempts")
-                        raise e
-                    time.sleep(WINDOW_SECONDS_BETWEEN_CREATIONS)
+        for attempt in range(WINDOW_MAX_RETRIES_CREATION):
+            try:
+                self.create_window()
+                self.configure_window()
+                # First image show
+                self.image_changed = False
+                self.show_image(self.image)
+
+            except Exception as e:
+                logging.warning(f"Attempt {attempt + 1} creating window {self.window_name} failed: {e}")
+                if attempt + 1 == WINDOW_MAX_RETRIES_CREATION:
+                    logging.error(f"Failed to create window after {WINDOW_MAX_RETRIES_CREATION} attempts")
+                    self.created = True
+                    raise e
+                time.sleep(WINDOW_SECONDS_BETWEEN_CREATIONS)
+
+        self.created = True
 
         while not self.stopped:
             if self.image_changed:
@@ -120,9 +126,3 @@ class WindowController(threading.Thread):
             return False
         else:
             return True
-
-    # region Window Functions
-    def add_mouse_callback_function(self, function, params):
-        cv2.setMouseCallback(self.window_name, function, params)
-
-    # endregion

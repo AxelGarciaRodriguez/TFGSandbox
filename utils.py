@@ -14,7 +14,7 @@ def generate_cords(size, initial_position=None):
             (initial_position[0] + width, initial_position[1] + height)]
 
 
-def transform_cords(point, original_size, new_size):
+def transform_cord(point, original_size, new_size):
     original_height, original_width = original_size
     new_height, new_width = new_size
 
@@ -22,6 +22,19 @@ def transform_cords(point, original_size, new_size):
     y_position = point[1] * new_height / original_height
 
     return int(x_position), int(y_position)
+
+
+def transform_cords(points, original_size, new_size):
+    original_height, original_width = original_size
+    new_height, new_width = new_size
+
+    new_points = []
+    for point in points:
+        x_position = point[0] * new_width / original_width
+        y_position = point[1] * new_height / original_height
+        new_points.append((x_position, y_position))
+
+    return new_points
 
 
 def get_depth_information(depth_image, point):
@@ -33,6 +46,12 @@ def generate_relative_path(path_parts):
     relative_path = os.path.join(current_dir, *path_parts)
     image_path = os.path.normpath(relative_path)
     return image_path
+
+
+def generate_folders(path):
+    folder_path = os.path.dirname(path)
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
 
 
 def ordering_points(l_point1, l_point2):

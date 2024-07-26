@@ -15,7 +15,9 @@ class ImageProcessor(ImageBase):
         self.update(image=image)
         return self.image
 
-    def warp_perspective(self, warp_matrix, output_size):
+    def warp_perspective(self, warp_matrix, output_size=None):
+        if not output_size:
+            output_size = (self.width, self.height)
         image = cv2.warpPerspective(self.image, warp_matrix, output_size)
         self.update(image=image)
         return self.image
@@ -65,14 +67,12 @@ class ImageProcessor(ImageBase):
 
     def find_chessboard_corners(self, pattern_size, flags=cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_NORMALIZE_IMAGE):
         gray_image = self.change_color(color=cv2.COLOR_BGR2GRAY)
-        # gray_image = self.change_to_binary_colors()
-        # gray_image = self.gamma_correction(gamma=3)
         ret, corners = cv2.findChessboardCorners(image=gray_image, patternSize=pattern_size, flags=flags)
-        if ret:
-            self.restore()
-            image = self.draw_chessboard_corners(pattern_size=pattern_size, corners=corners)
-            cv2.imshow('Chessboard corners', image)
-            cv2.waitKey(500)
+        # if ret:
+        #     self.restore()
+        #     image = self.draw_chessboard_corners(pattern_size=pattern_size, corners=corners)
+        #     cv2.imshow('Chessboard corners', image)
+        #     cv2.waitKey(500)
 
         self.restore()
         return ret, corners
@@ -80,7 +80,7 @@ class ImageProcessor(ImageBase):
     def calculate_sub_pix_corner(self, corners,
                                  criteria=(cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)):
         gray_image = self.change_color(color=cv2.COLOR_BGR2GRAY)
-        corners = cv2.cornerSubPix(gray_image, corners, (11, 11), (-1, -1), criteria)
+        corners = cv2.cornerSubPix(gray_image, corners, (5, 5), (-1, -1), criteria)
         self.restore()
         return corners
 

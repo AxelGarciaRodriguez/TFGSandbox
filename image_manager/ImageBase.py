@@ -6,7 +6,8 @@ import cv2
 class ImageBase:
     def __init__(self, image=None, image_absolute_path=None):
         if image_absolute_path is not None:
-            self.image = cv2.imread(image_absolute_path)
+            self.image = None
+            self.load(image_absolute_path)
         elif image is not None:
             self.image = image
         else:
@@ -25,6 +26,9 @@ class ImageBase:
     def update(self, image):
         self.image = image
         self.update_image_information()
+
+    def overwrite(self):
+        self.initial_image = deepcopy(self.image)
 
     def restore(self):
         image = deepcopy(self.initial_image)
@@ -63,6 +67,9 @@ class ImageBase:
         matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
         image = cv2.warpAffine(self.image, matrix, (self.width, self.height))
         self.update(image=image)
+        return self.image
+
+    def image_to_jpg(self):
         return self.image
 
     # endregion

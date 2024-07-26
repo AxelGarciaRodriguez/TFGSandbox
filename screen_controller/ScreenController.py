@@ -1,5 +1,7 @@
 import logging
+import time
 
+from kinect_controller.KinectLock import lock
 from utils import generate_cords
 from window_controller.WindowController import WindowController
 
@@ -18,6 +20,7 @@ class ScreenController(object):
         else:
             self.screen_cords = None
 
+        self.calibration = None
         self.active_window = {}
 
     def create_window(self, window_name, image, width=None, height=None, position=None, fullscreen=False):
@@ -38,12 +41,27 @@ class ScreenController(object):
             already_created_window.update_image(image=image)
             return already_created_window
         else:
-            logging.debug(f"Creating window '{window_name}' in '{self.screen_name}' screen ...")
-            new_window = WindowController(window_name=window_name, image=image, width=width, height=height,
-                                          position=position, fullscreen=fullscreen)
-            new_window.start()
-            self.active_window[window_name] = new_window
+            with lock:
+                logging.debug(f"Creating window '{window_name}' in '{self.screen_name}' screen ...")
+                new_window = WindowController(window_name=window_name, image=image, width=width, height=height,
+                                              position=position, fullscreen=fullscreen)
+                new_window.start()
+                self.active_window[window_name] = new_window
+                while new_window.created is False:
+                    time.sleep(0.5)
+
             return new_window
+
+    def create_window_calibrate(self, window_name, image, width=None, height=None, position=None, fullscreen=False, avoid_camera_matrix=False, avoid_camera_focus=False):
+        if self.calibration is not None:
+            if not avoid_camera_matrix:
+                image = self.calibration.applied_camera_calibration(image=image)
+            if not avoid_camera_focus:
+                image = self.calibration.applied_inverse_camera_focus(image=image, output_size=self.screen_resolution)
+
+        returned_value = self.create_window(window_name=window_name, image=image, width=width, height=height,
+                                            fullscreen=fullscreen, position=position)
+        return returned_value
 
     def update_window(self, window_name, width=None, height=None, position=None, fullscreen=False):
         already_created_window = self.get_window(window_name=window_name)
@@ -63,6 +81,16 @@ class ScreenController(object):
         logging.warning(f"Window {window_name} does not exist in {self.screen_name}, image cannot be updated")
         self.remove_window(window_name=window_name)
         return None
+
+    def update_window_image_calibrate(self, window_name, image, avoid_camera_matrix=False, avoid_camera_focus=False):
+        if self.calibration is not None:
+            if not avoid_camera_matrix:
+                image = self.calibration.applied_camera_calibration(image=image)
+            if not avoid_camera_focus:
+                image = self.calibration.applied_inverse_camera_focus(image=image, output_size=self.screen_resolution)
+
+        returned_value = self.update_window_image(window_name=window_name, image=image)
+        return returned_value
 
     def get_window(self, window_name):
         if window_name in self.active_window.keys():
@@ -93,3 +121,7 @@ class ScreenController(object):
             return self.active_window[window_name].check_if_alive()
         else:
             return False
+
+    def save_calibration(self):
+        if self.calibration is not None:
+            self.calibration.save_calibration()
