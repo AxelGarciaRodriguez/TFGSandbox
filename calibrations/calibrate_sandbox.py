@@ -115,27 +115,17 @@ def test_calibrations(kinect, principal_screen, projector_screen):
     kinect_infrared_processor.normalize()
     kinect_infrared_processor.transform_dtype()
 
-    # principal_screen.create_window(window_name="Color Focused", image=kinect_color_processor.image)
-    # principal_screen.create_window(window_name="Depth Focused", image=kinect_depth_processor.image)
-    # principal_screen.create_window(window_name="Infrared Focused", image=kinect_infrared_processor.image)
-    #
-    # while (principal_screen.check_if_window_active(window_name="Infrared Focused") or
-    #        principal_screen.check_if_window_active(window_name="Depth Focused") or
-    #        principal_screen.check_if_window_active(window_name="Color Focused")
-    # ):
-    #     time.sleep(1)
+    principal_screen.create_window(window_name="Color Focused", image=kinect_color_processor.image)
+    principal_screen.create_window(window_name="Depth Focused", image=kinect_depth_processor.image)
+    principal_screen.create_window(window_name="Infrared Focused", image=kinect_infrared_processor.image)
+
+    while (principal_screen.check_if_window_active(window_name="Infrared Focused") or
+           principal_screen.check_if_window_active(window_name="Depth Focused") or
+           principal_screen.check_if_window_active(window_name="Color Focused")
+    ):
+        time.sleep(1)
 
     # PROJECTOR TEST
-    # projector_screen.create_window_calibrate(window_name="Test projected Image RGB", image=kinect_color_processor.image,
-    #                                          fullscreen=True)
-    # while projector_screen.check_if_window_active(window_name="Test projected Image RGB"):
-    #     time.sleep(1)
-    #
-    # projector_screen.create_window_calibrate(window_name="Test projected Image IR",
-    #                                          image=kinect_infrared_processor.image, fullscreen=True)
-    # while projector_screen.check_if_window_active(window_name="Test projected Image IR"):
-    #     time.sleep(1)
-
     projector_screen.create_window_calibrate(window_name="Test projected Image DEPTH",
                                              image=kinect_depth_processor.image, fullscreen=True)
     while projector_screen.check_if_window_active(window_name="Test projected Image DEPTH"):
@@ -312,12 +302,12 @@ def main():
     # Initiate calibrations
     try:
         # calibrate_sandbox_old(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
-        # calibrate_kinect_sandbox(kinect=kinect, kinect_frame=KinectFrames.COLOR, principal_screen=principal_screen,
-        #                          projector_screen=projector_screen)
-        # calibrate_kinect_sandbox(kinect=kinect, kinect_frame=KinectFrames.INFRARED, principal_screen=principal_screen,
-        #                          projector_screen=projector_screen)
-        # calibrate_projector_sandbox(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
-        # save_calibrations(kinect=kinect, projector_screen=projector_screen)
+        calibrate_kinect_sandbox(kinect=kinect, kinect_frame=KinectFrames.COLOR, principal_screen=principal_screen,
+                                 projector_screen=projector_screen)
+        calibrate_kinect_sandbox(kinect=kinect, kinect_frame=KinectFrames.INFRARED, principal_screen=principal_screen,
+                                 projector_screen=projector_screen)
+        calibrate_projector_sandbox(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
+        save_calibrations(kinect=kinect, projector_screen=projector_screen)
         test_calibrations(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
 
     except Exception as error:
