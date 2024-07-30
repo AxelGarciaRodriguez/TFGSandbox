@@ -69,7 +69,4 @@ class ImageBase:
         self.update(image=image)
         return self.image
 
-    def image_to_jpg(self):
-        return self.image
-
     # endregion

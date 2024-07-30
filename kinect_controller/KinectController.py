@@ -1,4 +1,3 @@
-import enum
 import logging
 import time
 from functools import reduce
@@ -8,19 +7,12 @@ import cv2
 import numpy as np
 
 from calibrations.CalibrationFile import CalibrationClass
-from kinect_module import PyKinectV2
 from kinect_module import PyKinectRuntime
 
 from literals import KINECT_MAX_CHECKS_CONNECTION, KINECT_SECONDS_BETWEEN_CHECK_CONNECTION, KINECT_CALIBRATION_PATH, \
-    KINECT_CALIBRATION_FILENAME
+    KINECT_CALIBRATION_FILENAME, KinectFrames
 from kinect_controller.KinectLock import lock
 from utils import generate_relative_path
-
-
-class KinectFrames(enum.Enum):
-    COLOR = PyKinectV2.FrameSourceTypes_Color
-    DEPTH = PyKinectV2.FrameSourceTypes_Depth
-    INFRARED = PyKinectV2.FrameSourceTypes_Infrared
 
 
 class KinectController(object):
@@ -94,6 +86,8 @@ class KinectController(object):
         if kinect_frame == KinectFrames.COLOR:
             image = frame.reshape((self.kinect.color_frame_desc.Height, self.kinect.color_frame_desc.Width, 4)).astype(
                 np.uint8)
+            if image.shape[-1] == 4:
+                image = image[..., :3]
         elif kinect_frame == KinectFrames.DEPTH:
             image = frame.reshape((self.kinect.depth_frame_desc.Height, self.kinect.depth_frame_desc.Width)).astype(
                 np.uint16)

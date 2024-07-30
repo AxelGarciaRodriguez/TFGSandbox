@@ -12,10 +12,12 @@ class ImageProcessorDepth(ImageProcessor):
         image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
         self.update(image=image)
 
-    def image_to_jpg(self):
+    def save(self, output_path):
+        self.restore()
         self.normalize()
         self.transform_dtype(dtype=np.uint8)
-        return self.image
+        super().save(output_path=output_path)
+        self.restore()
 
     def invert(self):
         image = self.image

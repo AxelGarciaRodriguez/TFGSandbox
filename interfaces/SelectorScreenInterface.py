@@ -1,10 +1,10 @@
-import logging
 import re
 import tkinter as tk
 from tkinter import ttk, messagebox
 
 from screeninfo import screeninfo
 
+from literals_control import PRINCIPAL_SCREEN_INDEX, PROJECTOR_SCREEN_INDEX
 from screen_controller.PrincipalScreenController import PrincipalScreenController
 from screen_controller.ProjectorScreenController import ProjectorScreenController
 
@@ -47,14 +47,21 @@ class SelectorScreenInterface:
         screen_names = [f"Screen: {re.sub(r'[^a-zA-Z0-9]', '', screen.name)}" for screen in self.screens]
 
         tk.Label(self.frame, text="Seleccione pantalla principal:").grid(row=0, column=0, padx=5, pady=5)
-        self.main_screen_combobox = ttk.Combobox(self.frame, values=screen_names + ["Sin Pantalla Principal"])
+        self.main_screen_combobox = ttk.Combobox(self.frame, values=screen_names)
         self.main_screen_combobox.grid(row=0, column=1, padx=5, pady=5)
-        self.main_screen_combobox.current(0)
+        if len(screen_names) > PRINCIPAL_SCREEN_INDEX:
+            self.main_screen_combobox.current(PRINCIPAL_SCREEN_INDEX)
+        else:
+            self.main_screen_combobox.current(0)
 
         tk.Label(self.frame, text="Seleccione pantalla del proyector:").grid(row=1, column=0, padx=5, pady=5)
         self.projector_screen_combobox = ttk.Combobox(self.frame, values=screen_names)
         self.projector_screen_combobox.grid(row=1, column=1, padx=5, pady=5)
-        self.projector_screen_combobox.current(0 if len(screen_names) == 1 else 1)
+
+        if len(screen_names) > PROJECTOR_SCREEN_INDEX:
+            self.projector_screen_combobox.current(PROJECTOR_SCREEN_INDEX)
+        else:
+            self.projector_screen_combobox.current(0 if len(screen_names) == 1 else 1)
 
         finish_button = tk.Button(self.frame, text="Aceptar", command=self.update_screens_after)
         finish_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
@@ -95,16 +102,15 @@ class SelectorScreenInterface:
         projector_screen_index = self.projector_screen_combobox.current()
 
         if main_screen_index == projector_screen_index:
-            logging.warning(
-                "Cannot use same screen for projector and principal, principal screen will be changed to 'No Pantalla Principal' value")
-        else:
-            # Principal screen
-            main_screen_tmp = self.screens[main_screen_index]
-            self.main_screen = PrincipalScreenController(
-                screen_name=re.sub(r'[^a-zA-Z0-9]', '', main_screen_tmp.name),
-                width_resolution=main_screen_tmp.width,
-                height_resolution=main_screen_tmp.height,
-                position=(main_screen_tmp.x, main_screen_tmp.y))
+            raise EnvironmentError("Cannot use same screen for projector and principal")
+
+        # Principal screen
+        main_screen_tmp = self.screens[main_screen_index]
+        self.main_screen = PrincipalScreenController(
+            screen_name=re.sub(r'[^a-zA-Z0-9]', '', main_screen_tmp.name),
+            width_resolution=main_screen_tmp.width,
+            height_resolution=main_screen_tmp.height,
+            position=(main_screen_tmp.x, main_screen_tmp.y))
 
         # Projector Screen
         projector_screen_tmp = self.screens[projector_screen_index]

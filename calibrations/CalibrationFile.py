@@ -32,6 +32,29 @@ class CalibrationClass:
         # FILES
         self.calibration_path_file = calibration_path_file
 
+    def set_calibrations(self, calibration):
+        if CAMERA_CALIBRATION_VARIABLE in calibration.keys():
+            self.camera_matrix = calibration[CAMERA_CALIBRATION_VARIABLE]
+        if CAMERA_DISTORTION_VARIABLE in calibration.keys():
+            self.cof_distortion = calibration[CAMERA_DISTORTION_VARIABLE]
+        if CAMERA_ROTATION_VARIABLE in calibration.keys():
+            self.camera_rotation = calibration[CAMERA_ROTATION_VARIABLE]
+        if CAMERA_TRANSLATION_VARIABLE in calibration.keys():
+            self.camera_translation = calibration[CAMERA_TRANSLATION_VARIABLE]
+        if OBJ_POINTS_KEY in calibration.keys():
+            self.obj_points = calibration[OBJ_POINTS_KEY]
+        if IMG_POINTS_KEY in calibration.keys():
+            self.img_points = calibration[IMG_POINTS_KEY]
+
+        if FOCUS_HOMOGRAPHY_VARIABLE in calibration.keys():
+            self.matrix_homography = calibration[FOCUS_HOMOGRAPHY_VARIABLE]
+        if FOCUS_INV_HOMOGRAPHY_VARIABLE in calibration.keys():
+            self.matrix_inverse_homography = calibration[FOCUS_INV_HOMOGRAPHY_VARIABLE]
+        if FOCUS_CORDS_VARIABLE in calibration.keys():
+            self.cords = calibration[FOCUS_CORDS_VARIABLE]
+        if FOCUS_CORDS_ORIGINAL_VARIABLE in calibration.keys():
+            self.original_cords = calibration[FOCUS_CORDS_ORIGINAL_VARIABLE]
+
     def read_calibration(self, calibration_path_file=None):
         if calibration_path_file:
             self.calibration_path_file = calibration_path_file
@@ -42,28 +65,7 @@ class CalibrationClass:
         if os.path.exists(self.calibration_path_file) and os.path.isfile(self.calibration_path_file):
             try:
                 calibration = np.load(self.calibration_path_file)
-
-                if CAMERA_CALIBRATION_VARIABLE in calibration.keys():
-                    self.camera_matrix = calibration[CAMERA_CALIBRATION_VARIABLE]
-                if CAMERA_DISTORTION_VARIABLE in calibration.keys():
-                    self.cof_distortion = calibration[CAMERA_DISTORTION_VARIABLE]
-                if CAMERA_ROTATION_VARIABLE in calibration.keys():
-                    self.camera_rotation = calibration[CAMERA_ROTATION_VARIABLE]
-                if CAMERA_TRANSLATION_VARIABLE in calibration.keys():
-                    self.camera_translation = calibration[CAMERA_TRANSLATION_VARIABLE]
-                if OBJ_POINTS_KEY in calibration.keys():
-                    self.obj_points = calibration[OBJ_POINTS_KEY]
-                if IMG_POINTS_KEY in calibration.keys():
-                    self.img_points = calibration[IMG_POINTS_KEY]
-
-                if FOCUS_HOMOGRAPHY_VARIABLE in calibration.keys():
-                    self.matrix_homography = calibration[FOCUS_HOMOGRAPHY_VARIABLE]
-                if FOCUS_INV_HOMOGRAPHY_VARIABLE in calibration.keys():
-                    self.matrix_inverse_homography = calibration[FOCUS_INV_HOMOGRAPHY_VARIABLE]
-                if FOCUS_CORDS_VARIABLE in calibration.keys():
-                    self.cords = calibration[FOCUS_CORDS_VARIABLE]
-                if FOCUS_CORDS_ORIGINAL_VARIABLE in calibration.keys():
-                    self.original_cords = calibration[FOCUS_CORDS_ORIGINAL_VARIABLE]
+                self.set_calibrations(calibration=calibration)
 
             except Exception as error:
                 logging.error(f"Kinect error loading file {self.calibration_path_file}: {error}")

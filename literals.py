@@ -1,6 +1,18 @@
 # region Kinect Control
+import enum
+
+from kinect_module import PyKinectV2
+
 KINECT_MAX_CHECKS_CONNECTION = 5
 KINECT_SECONDS_BETWEEN_CHECK_CONNECTION = 5
+
+
+class KinectFrames(enum.Enum):
+    COLOR = PyKinectV2.FrameSourceTypes_Color
+    DEPTH = PyKinectV2.FrameSourceTypes_Depth
+    INFRARED = PyKinectV2.FrameSourceTypes_Infrared
+
+
 # endregion
 
 # region Window Control
@@ -9,14 +21,7 @@ WINDOW_SECONDS_BETWEEN_CREATIONS = 1
 # endregion
 
 # region Kinect/Projector Calibration
-NUMBER_DEPTH_IMAGES_FOR_DEPTH_CALIBRATION = 100
-
-RGB_IMAGES_KEY = "rgb"
-DEPTH_IMAGES_KEY = "depth"
-DEPTH_NP_KEY = "depth_np"
-IR_IMAGES_KEY = "infrared"
-
-CALIBRATE_PATTERN_IMAGES = [RGB_IMAGES_KEY, IR_IMAGES_KEY]
+CALIBRATE_PATTERN_IMAGES = [KinectFrames.COLOR.name, KinectFrames.INFRARED.name]
 
 OBJ_POINTS_KEY = "obj_points"
 IMG_POINTS_KEY = "img_points"

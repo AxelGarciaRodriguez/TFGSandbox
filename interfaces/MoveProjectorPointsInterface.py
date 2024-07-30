@@ -69,7 +69,6 @@ class MoveProjectorPointsInterface:
         self.generate_projector_image()
 
         # SHOW KINECT IMAGE
-        self.image = None
         self.photo = None
         self.photo_obj = None
         self.show_kinect_image()
@@ -123,7 +122,7 @@ class MoveProjectorPointsInterface:
 
     def update_background_loop(self):
         if self.kinect.check_if_new_image(kinect_frame=KinectFrames.COLOR):
-            image_kinect = self.kinect.get_image(kinect_frame=KinectFrames.COLOR)
+            image_kinect = self.kinect.get_image_calibrate(kinect_frame=KinectFrames.COLOR, avoid_camera_focus=True)
             self.image_processor_kinect = ImageProcessorRGB(image=image_kinect)
             self.show_kinect_image()
 
@@ -139,9 +138,9 @@ class MoveProjectorPointsInterface:
         self.image_processor_projector = ImageProcessor(image=background_color_image)
 
     def show_kinect_image(self):
-        self.image = Image.fromarray(self.image_processor_kinect.image)
-        self.image = self.image.resize(self.window_size)
-        self.photo = ImageTk.PhotoImage(self.image)
+        image = Image.fromarray(self.image_processor_kinect.image[..., ::-1])
+        image = image.resize(self.window_size)
+        self.photo = ImageTk.PhotoImage(image)
         if self.photo_obj:
             self.canvas.itemconfig(self.photo_obj, image=self.photo)
         else:
@@ -178,12 +177,12 @@ class MoveProjectorPointsInterface:
 
     def move_left(self, event):
         self.actual_point_projector = (
-            self.actual_point_projector[0] + self.displacement_value, self.actual_point_projector[1])
+            self.actual_point_projector[0] - self.displacement_value, self.actual_point_projector[1])
         self.draw_projector_point()
 
     def move_right(self, event):
         self.actual_point_projector = (
-            self.actual_point_projector[0] - self.displacement_value, self.actual_point_projector[1])
+            self.actual_point_projector[0] + self.displacement_value, self.actual_point_projector[1])
         self.draw_projector_point()
 
     def accept_polygon(self):
