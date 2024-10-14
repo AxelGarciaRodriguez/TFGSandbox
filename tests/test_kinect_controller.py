@@ -14,13 +14,8 @@ class TestKinectController(unittest.TestCase):
         mock_kinect_instance = MockPyKinectRuntime.return_value
         mock_kinect_instance.has_new_color_frame.return_value = True
 
-        # Inicializar el controlador Kinect
         controller = KinectController([KinectFrames.COLOR])
-
-        # Verificar que el atributo kinect del controlador no sea None
         self.assertIsNotNone(controller.kinect)
-
-        # Verificar que el objeto kinect del controlador sea el mismo que el mock
         self.assertEqual(controller.kinect, mock_kinect_instance)
 
     @patch('kinect_module.PyKinectRuntime.PyKinectRuntime')
@@ -50,7 +45,7 @@ class TestKinectController(unittest.TestCase):
 
         image = controller.get_image(KinectFrames.COLOR)
         self.assertIsNotNone(image)
-        self.assertEqual(image.shape, (1080, 1920, 4))
+        self.assertEqual(image.shape, (1080, 1920, 3))
 
     @patch('kinect_module.PyKinectRuntime')
     def test_display_rgb_image(self, MockPyKinectRuntime):
@@ -69,11 +64,10 @@ class TestKinectController(unittest.TestCase):
         image = controller.get_image(KinectFrames.COLOR)
 
         self.assertIsNotNone(image)
-        self.assertEqual(image.shape, (1080, 1920, 4))
+        self.assertEqual(image.shape, (1080, 1920, 3))
 
-        # Display the image using OpenCV
         cv2.imshow('Color Image', image)
-        cv2.waitKey(0)  # Wait for a key press to close the image window
+        cv2.waitKey(0)
         cv2.destroyAllWindows()
 
     @patch('kinect_module.PyKinectRuntime')
@@ -82,7 +76,7 @@ class TestKinectController(unittest.TestCase):
         MockPyKinectRuntime.return_value = mock_kinect_instance
 
         # Mock the depth frame data
-        mock_depth_frame = np.random.randint(0, 65536, (424 * 512,), dtype=np.uint16)  # Example depth frame data
+        mock_depth_frame = np.random.randint(0, 65536, (424 * 512,), dtype=np.uint16)
         mock_kinect_instance.has_new_depth_frame.return_value = True
         mock_kinect_instance.get_last_depth_frame.return_value = mock_depth_frame
         mock_kinect_instance.depth_frame_desc.Height = 424
@@ -100,7 +94,7 @@ class TestKinectController(unittest.TestCase):
 
         # Display the image using OpenCV
         cv2.imshow('Depth Image', depth_colormap)
-        cv2.waitKey(0)  # Wait for a key press to close the image window
+        cv2.waitKey(0)
         cv2.destroyAllWindows()
 
 

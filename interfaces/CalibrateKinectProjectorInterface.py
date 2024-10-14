@@ -3,12 +3,11 @@ from datetime import datetime
 from tkinter import messagebox, ttk
 import numpy as np
 
-from image_manager.ImageBase import ImageBase
 from image_manager.ImageGenerator import ImageGenerator
 from image_manager.ImageProcessor import ImageProcessor
-from kinect_controller.KinectController import KinectFrames
-from literals import PATTERN_MOVE_SCALAR, PATTERN_RESIZE_SCALAR, RGB_IMAGES_KEY, DEPTH_IMAGES_KEY, PROJECTED_IMAGES_KEY
-from utils import transform_cords
+from image_manager.ImageProcessorDepth import ImageProcessorDepth
+from image_manager.ImageProcessorIR import ImageProcessorIR
+from literals import PATTERN_MOVE_SCALAR, PATTERN_RESIZE_SCALAR, KinectFrames
 
 from PIL import Image, ImageTk
 
@@ -35,7 +34,7 @@ class CalibrateKinectProjectorInterface:
         # Necessary variables
         self.kinect = kinect
         self.pattern_size = None
-        self.photos_taken = previous_images  # Previous images contains 1 key for each image, and a dict for rgb, depth and patter images
+        self.photos_taken = previous_images  # Previous images contains 1 key for each image, and a dict for COLOR, depth and pattern images
         self.projector_window = projector_window
         self.projector_screen = projector_screen
 
@@ -211,7 +210,10 @@ class CalibrateKinectProjectorInterface:
             self.index_label.config(text=f"0 / 0")
             return
 
-        image_processor = list(self.photos_taken.values())[self.current_index][RGB_IMAGES_KEY]
+        image_processor = list(self.photos_taken.values())[self.current_index][KinectFrames.INFRARED.name]
+        image_processor.normalize()
+        image_processor.transform_dtype()
+
         image = Image.fromarray(image_processor.image)
         image = image.resize(self.window_image_size)
         photo = ImageTk.PhotoImage(image)
@@ -313,16 +315,24 @@ class CalibrateKinectProjectorInterface:
         self.countdown_label.place_forget()
 
         image_name = f'{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.png'
+
         self.photos_taken[image_name] = {}
         # GET RGB IMAGE
         image = self.kinect.get_image(kinect_frame=KinectFrames.COLOR)
         image_processor = ImageProcessor(image=image)
-        self.photos_taken[image_name][RGB_IMAGES_KEY] = image_processor
+        self.photos_taken[image_name][KinectFrames.COLOR.name] = image_processor
 
         # GET DEPTH IMAGE
         image = self.kinect.get_image(kinect_frame=KinectFrames.DEPTH)
-        image_processor = ImageProcessor(image=image)
-        self.photos_taken[image_name][DEPTH_IMAGES_KEY] = image_processor
+        image_processor = ImageProcessorDepth(image=image)
+        image_processor.normalize()
+        self.photos_taken[image_name][KinectFrames.DEPTH.name] = image_processor
+
+        # GET IR IMAGE
+        image = self.kinect.get_image(kinect_frame=KinectFrames.INFRARED)
+        image_processor = ImageProcessorIR(image=image)
+        image_processor.normalize()
+        self.photos_taken[image_name][KinectFrames.INFRARED.name] = image_processor
 
         # SAVE PROJECTOR IMAGE
         # image = self.projector_window.image
@@ -349,7 +359,7 @@ class CalibrateKinectProjectorInterface:
     def delete_patterns(self):
         if messagebox.askokcancel("Borrar Patrones", "¿Estás seguro de borrar todos los patrones encontrados?"):
             for image_name, image_map in self.photos_taken.items():
-                image_map[RGB_IMAGES_KEY].restore()
+                image_map[KinectFrames.COLOR.name].restore()
                 self.delete_image_information(image_name=image_name)
 
             self.update_image()
@@ -381,11 +391,11 @@ class CalibrateKinectProjectorInterface:
             if image_name in self.object_points.keys():
                 continue
 
-            rgb_img = image_map[RGB_IMAGES_KEY]
-            self.image_shape = rgb_img.image_shape
-            depth_img = image_map[DEPTH_IMAGES_KEY]
+            ir_img = image_map[KinectFrames.INFRARED.name]
+            self.image_shape = ir_img.image_shape
+            depth_img = image_map[KinectFrames.DEPTH.name]
 
-            ret, corners = rgb_img.find_chessboard_corners(pattern_size=self.pattern_size)
+            ret, corners = ir_img.find_chessboard_corners(pattern_size=self.pattern_size)
             if ret:
                 self.object_points[image_name] = pattern_points
                 self.image_points[image_name] = corners
@@ -402,7 +412,7 @@ class CalibrateKinectProjectorInterface:
                 # self.depth_points[image_name] = depth_points
 
                 # TODO ADD SUBPIX???
-                rgb_img.draw_chessboard_corners(pattern_size=self.pattern_size, corners=corners)
+                ir_img.draw_chessboard_corners(pattern_size=self.pattern_size, corners=corners)
             else:
                 # Delete image
                 image_names_to_delete.append(image_name)
