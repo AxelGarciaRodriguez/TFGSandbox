@@ -74,8 +74,8 @@ class KinectController(object):
 
             return kinect_frame_obj
         else:
-            logging.debug("Not found new frame to get in get_frame method")
-            return None
+            logging.info("Not found new frame to get in get_frame method")
+        return None
 
     def get_image(self, kinect_frame: KinectFrames):
         frame = self.get_frame(kinect_frame=kinect_frame)
@@ -102,11 +102,12 @@ class KinectController(object):
 
     def get_image_calibrate(self, kinect_frame: KinectFrames, avoid_camera_matrix=False, avoid_camera_focus=False):
         image = self.get_image(kinect_frame=kinect_frame)
-        if kinect_frame.name in self.kinect_calibrations.keys():
-            if not avoid_camera_matrix:
-                image = self.kinect_calibrations[kinect_frame.name].applied_camera_calibration(image=image)
-            if not avoid_camera_focus:
-                image = self.kinect_calibrations[kinect_frame.name].applied_camera_focus(image=image)
+        if image is not None:
+            if kinect_frame.name in self.kinect_calibrations.keys():
+                if not avoid_camera_matrix:
+                    image = self.kinect_calibrations[kinect_frame.name].applied_camera_calibration(image=image)
+                if not avoid_camera_focus:
+                    image = self.kinect_calibrations[kinect_frame.name].applied_camera_focus(image=image)
 
         return image
 

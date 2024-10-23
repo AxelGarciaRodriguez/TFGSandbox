@@ -43,12 +43,12 @@ class SelectDepthInterface:
         self.update_image()
 
         # Sliders
-        self.slider_min = Scale(window, from_=0, to=255, orient=HORIZONTAL, label="Profundidad Mínima",
+        self.slider_min = Scale(window, from_=0, to=1500, orient=HORIZONTAL, label="Profundidad Mínima",
                                 command=self.segment_depth_image)
         self.slider_min.set(0)
         self.slider_min.pack()
 
-        self.slider_max = Scale(window, from_=0, to=255, orient=HORIZONTAL, label="Profundidad Máxima",
+        self.slider_max = Scale(window, from_=0, to=1500, orient=HORIZONTAL, label="Profundidad Máxima",
                                 command=self.segment_depth_image)
         self.slider_max.set(255)
         self.slider_max.pack()

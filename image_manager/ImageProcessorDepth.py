@@ -19,6 +19,11 @@ class ImageProcessorDepth(ImageProcessor):
         super().save(output_path=output_path)
         self.restore()
 
+    def remove_data_between_distance(self, min_depth, max_depth):
+        image = np.clip(self.image, min_depth, max_depth)
+        self.update(image=image)
+        return image
+
     def invert(self):
         image = self.image
         if image.dtype != np.uint8:

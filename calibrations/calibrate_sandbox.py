@@ -10,6 +10,7 @@ from image_manager.ImageProcessorRGB import ImageProcessorRGB
 from interfaces.DrawPolygonInterface import instantiate_draw_polygon_interface
 from interfaces.MoveProjectorPointsInterface import instantiate_move_projector_interface
 from interfaces.SelectColorInterface import instantiate_select_color_interface
+from interfaces.SelectDepthInterface import instantiate_select_depth_interface
 from interfaces.SelectorScreenInterface import selector_screens
 from kinect_controller.KinectController import KinectFrames, KinectController
 from utils import generate_cords
@@ -69,34 +70,13 @@ def calibrate_kinect_depth_sandbox(kinect, principal_screen, projector_screen):
 
     # kinect_image = kinect.get_image_calibrate(kinect_frame=KinectFrames.DEPTH)
     # kinect_processor = ImageProcessorDepth(image=kinect_image)
+    # kinect_processor.remove_zeros()
     # kinect_processor.normalize()
     # kinect_processor.transform_dtype()
     # kinect_processor.apply_colormap()
-    #
-    # # Interface to adjust kinect depth
-    # instantiate_select_depth_interface(image=kinect_processor.image, principal_screen=principal_screen)
-
-    # Close all windows in main screen and projector screen
-    principal_screen.close_windows()
-    projector_screen.close_windows()
-
-
-def calibrate_kinect_color_sandbox(kinect, principal_screen, projector_screen):
-    logging.info(f"Calibrate COLOR image")
-    background_color_image = ImageGenerator.generate_color_image(shape=projector_screen.screen_resolution)
-    projector_screen.create_window(window_name="FullScreen Projector", image=background_color_image, fullscreen=True)
-
-    # COPY IR CALIBRATION IN DEPTH
-    points = kinect.kinect_calibrations[KinectFrames.INFRARED.name].cords
-    kinect.kinect_calibrations[KinectFrames.DEPTH.name].calculate_homography(
-        cords=points,
-        original_cords=generate_cords(
-            size=(kinect.kinect.depth_frame_desc.Height, kinect.kinect.depth_frame_desc.Width)))
-
-    kinect_image = kinect.get_image_calibrate(kinect_frame=KinectFrames.COLOR)
 
     # Interface to adjust kinect depth
-    instantiate_select_color_interface(image=kinect_image, principal_screen=principal_screen)
+    # instantiate_select_depth_interface(image=kinect_processor.image, principal_screen=principal_screen)
 
     # Close all windows in main screen and projector screen
     principal_screen.close_windows()
@@ -143,8 +123,10 @@ def test_calibrations(kinect, principal_screen, projector_screen):
     kinect_depth_processor = ImageProcessorDepth(image=kinect_image_depth)
     kinect_infrared_processor = ImageProcessorIR(image=kinect_image_infrared)
 
+    kinect_depth_processor.remove_zeros()
+    # kinect_depth_processor.remove_data_between_distance(min_distance=1159, max_distance=1384)
+    # kinect_depth_processor.transform_dtype()
     kinect_depth_processor.normalize()
-    kinect_depth_processor.transform_dtype()
     kinect_depth_processor.degaussing()
     kinect_depth_processor.invert()
     kinect_depth_processor.apply_colormap()
@@ -169,8 +151,10 @@ def test_calibrations(kinect, principal_screen, projector_screen):
         kinect_image_depth = kinect.get_image_calibrate(kinect_frame=KinectFrames.DEPTH)
         if kinect_image_depth is not None:
             kinect_depth_processor = ImageProcessorDepth(image=kinect_image_depth)
+            kinect_depth_processor.remove_zeros()
+            # kinect_depth_processor.remove_data_between_distance(min_distance=1159, max_distance=1384)
+            # kinect_depth_processor.transform_dtype()
             kinect_depth_processor.normalize()
-            kinect_depth_processor.transform_dtype()
             kinect_depth_processor.degaussing()
             kinect_depth_processor.invert()
             kinect_depth_processor.apply_colormap()
@@ -205,11 +189,9 @@ def main():
                                  projector_screen=projector_screen)
         calibrate_kinect_depth_sandbox(kinect=kinect, principal_screen=principal_screen,
                                        projector_screen=projector_screen)
-        # calibrate_kinect_color_sandbox(kinect=kinect, principal_screen=principal_screen,
-        #                                projector_screen=projector_screen)
         calibrate_projector_sandbox(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
         save_calibrations(kinect=kinect, projector_screen=projector_screen)
-        test_calibrations(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
+        # test_calibrations(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
 
     except Exception as error:
         logging.error(f"Error in manual calibrations: {error}")

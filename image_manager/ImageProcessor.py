@@ -26,6 +26,12 @@ class ImageProcessor(ImageBase):
 
     # region Filter Image
 
+    def remove_zeros(self):
+        mask = (self.image == 0).astype(np.uint8)
+        image = cv2.inpaint(self.image.astype(np.float32), mask, inpaintRadius=5, flags=cv2.INPAINT_TELEA)
+        self.update(image=image)
+        return self.image
+
     def degaussing(self, ksize=(5, 5), sigmaX=0):
         image = cv2.GaussianBlur(self.image, ksize, sigmaX)
         self.update(image=image)
