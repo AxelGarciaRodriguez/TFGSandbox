@@ -35,6 +35,8 @@ FOCUS_INV_HOMOGRAPHY_VARIABLE = "focus_inverse_homography"
 FOCUS_CORDS_VARIABLE = "focus_cords"
 FOCUS_CORDS_ORIGINAL_VARIABLE = "focus_original_cords"
 FOCUS_DIMENSION_ORIGINAL_VARIABLE = "focus_original_dimension"
+MIN_DEPTH_VARIABLE = "min_depth"
+MAX_DEPTH_VARIABLE = "max_depth"
 
 KINECT_CALIBRATION_PATH = "calibration_files\\kinect_calibration\\"
 KINECT_CALIBRATION_FILENAME = "kinect_calibration.npz"
@@ -55,4 +57,10 @@ PATTERN_RESIZE_SCALAR = 0.1
 IMAGE_BASE_PATH = "base_images"
 PATTERN_IMAGE_NAME = "chess_pattern.jpg"
 NOT_FOUND_IMAGE_NAME = "not_found_image.png"
+# endregion
+
+# region DEPTH management (mm)
+BOX_HEIGHT = 250
+STANDARD_MIN_DEPTH = 500
+STANDARD_MAX_DEPTH = 3000
 # endregion

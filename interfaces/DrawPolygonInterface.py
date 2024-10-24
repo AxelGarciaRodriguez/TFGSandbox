@@ -3,11 +3,12 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 
 
-def instantiate_draw_polygon_interface(image, principal_screen, window_size=(1920, 1080)):
+def instantiate_draw_polygon_interface(image, depth_image, principal_screen, window_size=(1920, 1080)):
     calibrate_window = tk.Tk()
     calibrate_window.geometry(
         f"{window_size[0]+30}x{window_size[1]+30}+{principal_screen.position[0]}+{principal_screen.position[1]}")
-    app = DrawPolygonInterface(window=calibrate_window, image=image, window_size=window_size)
+    app = DrawPolygonInterface(window=calibrate_window, image=image,
+                               depth_image=depth_image, window_size=window_size)
     calibrate_window.mainloop()
 
     if app.process_interrupted:
@@ -17,9 +18,10 @@ def instantiate_draw_polygon_interface(image, principal_screen, window_size=(192
 
 
 class DrawPolygonInterface:
-    def __init__(self, window, image, window_size=(1920, 1080)):
+    def __init__(self, window, image, depth_image, window_size=(1920, 1080)):
         # Necessary variables
         self.image = image
+        self.depth_image = depth_image
         self.window_size = window_size
 
         image_shape = image.shape[:2]
@@ -63,8 +65,13 @@ class DrawPolygonInterface:
 
             self.points.append((x_image, y_image))
             self.canvas.create_oval(event.x - 2, event.y - 2, event.x + 2, event.y + 2, fill="red")
-            self.canvas.create_text(event.x, event.y - 10, text=f"({int(x_image)}, {int(y_image)})", fill="black",
-                                    font='Helvetica 10 bold')
+            if self.depth_image is not None:
+                z = self.depth_image[int(y_image), int(x_image)]
+                self.canvas.create_text(event.x, event.y - 10, text=f"({int(x_image)}, {int(y_image)}, {z})", fill="black",
+                                        font='Helvetica 10 bold')
+            else:
+                self.canvas.create_text(event.x, event.y - 10, text=f"({int(x_image)}, {int(y_image)})", fill="black",
+                                        font='Helvetica 10 bold')
             if len(self.points) > 1:
                 self.canvas.create_line(self.points_draw[-2][0], self.points_draw[-2][1], event.x, event.y, fill="blue")
             if len(self.points) == 4:

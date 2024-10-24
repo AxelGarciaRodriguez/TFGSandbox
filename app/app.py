@@ -3,8 +3,6 @@ import logging
 import sys
 from copy import deepcopy
 
-import cv2
-import numpy as np
 
 from image_manager.ImageProcessorDepth import ImageProcessorDepth
 from interfaces.SelectorScreenInterface import selector_screens
@@ -25,19 +23,12 @@ def get_args():
     return args
 
 
-def generate_topographic_map(normalized_depth):
-    colormap = cv2.applyColorMap(np.uint8(normalized_depth), cv2.COLORMAP_JET)
-
-    return colormap
-
-
 def projector_application(projector_screen, kinect):
     # INSTANTIATE PROJECTOR APP
     kinect_image_depth = kinect.get_image_calibrate(kinect_frame=KinectFrames.DEPTH)
     kinect_depth_processor = ImageProcessorDepth(image=kinect_image_depth)
 
-    min_depth = 1159
-    max_depth = 1304
+    min_depth, max_depth = kinect.kinect_calibrations[KinectFrames.DEPTH.name].get_depth()
 
     previous_depth = None
 

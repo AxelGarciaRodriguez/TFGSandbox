@@ -7,7 +7,7 @@ import numpy as np
 from literals import CAMERA_CALIBRATION_VARIABLE, CAMERA_DISTORTION_VARIABLE, CAMERA_ROTATION_VARIABLE, \
     CAMERA_TRANSLATION_VARIABLE, OBJ_POINTS_KEY, IMG_POINTS_KEY, FOCUS_HOMOGRAPHY_VARIABLE, \
     FOCUS_INV_HOMOGRAPHY_VARIABLE, FOCUS_CORDS_VARIABLE, FOCUS_CORDS_ORIGINAL_VARIABLE, \
-    FOCUS_DIMENSION_ORIGINAL_VARIABLE
+    FOCUS_DIMENSION_ORIGINAL_VARIABLE, MIN_DEPTH_VARIABLE, MAX_DEPTH_VARIABLE, STANDARD_MIN_DEPTH, STANDARD_MAX_DEPTH
 from utils import generate_folders, ordering_points
 
 
@@ -20,6 +20,10 @@ class CalibrationClass:
         self.original_cords = original_cords
         self.matrix_homography = matrix_homography
         self.matrix_inverse_homography = matrix_inverse_homography
+
+        # DEPTH (mm)
+        self.min_depth = None
+        self.max_depth = None
 
         # CALIBRATION
         self.obj_points = obj_points
@@ -54,6 +58,10 @@ class CalibrationClass:
             self.cords = calibration[FOCUS_CORDS_VARIABLE]
         if FOCUS_CORDS_ORIGINAL_VARIABLE in calibration.keys():
             self.original_cords = calibration[FOCUS_CORDS_ORIGINAL_VARIABLE]
+        if MIN_DEPTH_VARIABLE in calibration.keys():
+            self.min_depth = int(calibration[MIN_DEPTH_VARIABLE])
+        if MAX_DEPTH_VARIABLE in calibration.keys():
+            self.max_depth = int(calibration[MAX_DEPTH_VARIABLE])
 
     def read_calibration(self, calibration_path_file=None):
         if calibration_path_file:
@@ -102,6 +110,10 @@ class CalibrationClass:
             arguments_saved[FOCUS_CORDS_VARIABLE] = self.cords
         if self.original_cords is not None:
             arguments_saved[FOCUS_CORDS_ORIGINAL_VARIABLE] = self.original_cords
+        if self.min_depth is not None:
+            arguments_saved[MIN_DEPTH_VARIABLE] = self.min_depth
+        if self.max_depth is not None:
+            arguments_saved[MAX_DEPTH_VARIABLE] = self.max_depth
 
         # Save calibrate file
         generate_folders(self.calibration_path_file)
@@ -163,3 +175,14 @@ class CalibrationClass:
 
     def applied_inverse_camera_focus(self, image, output_size=None):
         return self._applied_camera_matrix(image=image, matrix=self.matrix_inverse_homography, output_size=output_size)
+
+    def get_depth(self):
+        min_depth = self.min_depth
+        max_depth = self.max_depth
+        if min_depth is None:
+            logging.warning(f"NOT MIN DEPTH DEFINED, GETTING STANDARD MIN DEPTH {STANDARD_MIN_DEPTH}")
+            min_depth = STANDARD_MIN_DEPTH
+        if max_depth is None:
+            logging.warning(f"NOT MAX DEPTH DEFINED, GETTING STANDARD MAX DEPTH {STANDARD_MAX_DEPTH}")
+            max_depth = STANDARD_MAX_DEPTH
+        return min_depth, max_depth
