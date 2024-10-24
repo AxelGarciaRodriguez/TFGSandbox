@@ -63,13 +63,14 @@ class DrawPolygonInterface:
             x_image = self.canvas.canvasx(event.x) * self.initial_width / self.canvas.winfo_width()
             y_image = self.canvas.canvasy(event.y) * self.initial_height / self.canvas.winfo_height()
 
-            self.points.append((x_image, y_image))
             self.canvas.create_oval(event.x - 2, event.y - 2, event.x + 2, event.y + 2, fill="red")
             if self.depth_image is not None:
-                z = self.depth_image[int(y_image), int(x_image)]
-                self.canvas.create_text(event.x, event.y - 10, text=f"({int(x_image)}, {int(y_image)}, {z})", fill="black",
-                                        font='Helvetica 10 bold')
+                z_image = self.depth_image[int(y_image), int(x_image)]
+                self.points.append((x_image, y_image, z_image))
+                self.canvas.create_text(event.x, event.y - 10, text=f"({int(x_image)}, {int(y_image)}, {int(z_image)})",
+                                        fill="black", font='Helvetica 10 bold')
             else:
+                self.points.append((x_image, y_image))
                 self.canvas.create_text(event.x, event.y - 10, text=f"({int(x_image)}, {int(y_image)})", fill="black",
                                         font='Helvetica 10 bold')
             if len(self.points) > 1:

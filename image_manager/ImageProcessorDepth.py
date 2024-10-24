@@ -19,7 +19,36 @@ class ImageProcessorDepth(ImageProcessor):
         super().save(output_path=output_path)
         self.restore()
 
-    def remove_data_between_distance(self, min_depth, max_depth):
+    def remove_data_between_distance_option_a(self, min_depth, max_depth, other_image=None):
+
+        mask_out_of_range = (self.image < min_depth) | (self.image > max_depth)
+        mask_out_of_range = mask_out_of_range.astype(np.uint8)
+
+        kernel = np.ones((3, 3), np.uint8)
+        mask_with_neighbors = cv2.dilate(mask_out_of_range, kernel, iterations=5)
+
+        if other_image is None:
+            # image = np.clip(self.image, min_depth, max_depth)
+            image = np.where(mask_with_neighbors == 1, 0, self.image)
+        else:
+            image = np.where(mask_with_neighbors == 1, other_image, self.image)
+
+        self.update(image=image)
+        return image
+
+    def remove_data_between_distance_option_b(self, min_depth, max_depth, other_image=None):
+        mask_out_of_range = (self.image < min_depth) | (self.image > max_depth)
+        mask_out_of_range = mask_out_of_range.astype(np.uint8)
+
+        # Dilatar la máscara para incluir píxeles adyacentes
+        kernel = np.ones((3, 3), np.uint8)
+        mask_with_neighbors = cv2.dilate(mask_out_of_range, kernel, iterations=15)
+
+        image = np.where(mask_with_neighbors == 1, 0, self.image)
+        self.update(image=image)
+        return image
+
+    def remove_data_between_distance_option_c(self, min_depth, max_depth, other_image=None):
         image = np.clip(self.image, min_depth, max_depth)
         self.update(image=image)
         return image
