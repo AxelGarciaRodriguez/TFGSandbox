@@ -9,8 +9,6 @@ from image_manager.ImageProcessorIR import ImageProcessorIR
 from image_manager.ImageProcessorRGB import ImageProcessorRGB
 from interfaces.DrawPolygonInterface import instantiate_draw_polygon_interface
 from interfaces.MoveProjectorPointsInterface import instantiate_move_projector_interface
-from interfaces.SelectColorInterface import instantiate_select_color_interface
-from interfaces.SelectDepthInterface import instantiate_select_depth_interface
 from interfaces.SelectorScreenInterface import selector_screens
 from kinect_controller.KinectController import KinectFrames, KinectController
 from literals import BOX_HEIGHT
@@ -203,13 +201,13 @@ def main():
 
     # Initiate calibrations
     try:
-        # calibrate_kinect_sandbox(kinect=kinect, kinect_frame=KinectFrames.COLOR, principal_screen=principal_screen,
-        #                          projector_screen=projector_screen)
-        # calibrate_kinect_sandbox(kinect=kinect, kinect_frame=KinectFrames.INFRARED, principal_screen=principal_screen,
-        #                          projector_screen=projector_screen)
+        calibrate_kinect_sandbox(kinect=kinect, kinect_frame=KinectFrames.COLOR, principal_screen=principal_screen,
+                                 projector_screen=projector_screen)
+        calibrate_kinect_sandbox(kinect=kinect, kinect_frame=KinectFrames.INFRARED, principal_screen=principal_screen,
+                                 projector_screen=projector_screen)
         calibrate_kinect_depth_sandbox(kinect=kinect, principal_screen=principal_screen,
                                        projector_screen=projector_screen)
-        # calibrate_projector_sandbox(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
+        calibrate_projector_sandbox(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
         save_calibrations(kinect=kinect, projector_screen=projector_screen)
         test_calibrations(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
 
