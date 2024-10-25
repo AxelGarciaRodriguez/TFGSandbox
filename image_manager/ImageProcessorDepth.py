@@ -40,7 +40,6 @@ class ImageProcessorDepth(ImageProcessor):
         mask_out_of_range = (self.image < min_depth) | (self.image > max_depth)
         mask_out_of_range = mask_out_of_range.astype(np.uint8)
 
-        # Dilatar la máscara para incluir píxeles adyacentes
         kernel = np.ones((3, 3), np.uint8)
         mask_with_neighbors = cv2.dilate(mask_out_of_range, kernel, iterations=15)
 
