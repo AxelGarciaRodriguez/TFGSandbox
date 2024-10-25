@@ -1,6 +1,11 @@
 import argparse
 import logging
 import sys
+from copy import deepcopy
+
+import cv2
+import numpy as np
+from scipy.interpolate import splprep, splev
 
 from image_manager.ImageProcessorDepth import ImageProcessorDepth
 from interfaces.SelectorScreenInterface import selector_screens
@@ -19,6 +24,10 @@ def get_args():
 
     args, unknown = parser.parse_known_args()
     return args
+
+
+def principal_application(principal_screen):
+    pass
 
 
 def projector_application(projector_screen, kinect):
@@ -44,16 +53,14 @@ def projector_application(projector_screen, kinect):
 
             # COMBINE WITH PREVIOUS IMAGE
             if previous_depth is not None:
-                mask = kinect_depth_processor.image == 0
-                kinect_depth_processor.image[mask] = previous_depth[mask]
+                mask_zeros = kinect_depth_processor.image == 0
+                kinect_depth_processor.image[mask_zeros] = previous_depth[mask_zeros]
 
-                mask = kinect_depth_processor.image != 0
-                kinect_depth_processor.image[mask] = (kinect_depth_processor.image[mask] + previous_depth[mask]) / 2.0
+                umbral = 5
+                mask_noise = (~mask_zeros) & (np.abs(kinect_depth_processor.image - previous_depth) < umbral)
+                kinect_depth_processor.image[mask_noise] = previous_depth[mask_noise]
 
-            previous_depth = kinect_depth_processor.image.copy()
-
-            # APPLY GAUSSIAN FILTER
-            kinect_depth_processor.degaussing()
+            previous_depth = deepcopy(kinect_depth_processor.image)
 
             # NORMALIZE IMAGE
             img_depth_normalized = ((kinect_depth_processor.image - min_depth) / (max_depth - min_depth)) * 255.0
@@ -62,7 +69,10 @@ def projector_application(projector_screen, kinect):
             # TRANSFORM IMAGE TO 8UNIT
             kinect_depth_processor.transform_dtype()
 
-            # INVERT DATA TO GENERATE INVERSE COLOR MAP
+            # APPLY GAUSSIAN FILTER
+            kinect_depth_processor.degaussing()
+
+            # # INVERT DATA TO GENERATE INVERSE COLOR MAP
             kinect_depth_processor.invert()
 
             # APPLY COLORMAP
@@ -89,6 +99,7 @@ def main():
         logging.error(f"Error trying to instantiate screens/kinect: {error}")
         raise error
 
+    principal_application(principal_screen=principal_screen)
     projector_application(projector_screen=projector_screen, kinect=kinect)
 
 
