@@ -57,10 +57,10 @@ def projector_application(projector_screen, kinect):
             # REMOVE ZEROS (INTERPOLATE)
             kinect_depth_processor_no_focus.remove_zeros()
 
-            # COMBINE WITH PREVIOUS IMAGE
+            # COMBINE WITH PREVIOUS IMAGE (APPLY MASK)
             mask_out_of_range = ((kinect_depth_processor_no_focus.image > max_depth) | (
                         kinect_depth_processor_no_focus.image < min_depth)).astype(np.uint8)
-            mask_with_neighbors = cv2.dilate(mask_out_of_range, kernel, iterations=5)
+            mask_with_neighbors = cv2.dilate(mask_out_of_range, kernel, iterations=3)
 
             kinect_depth_processor_no_focus.image = np.where(mask_with_neighbors == 1, previous_depth,
                                                              kinect_depth_processor_no_focus.image)
@@ -73,15 +73,25 @@ def projector_application(projector_screen, kinect):
                 kinect_depth_processor_no_focus.image
             )
 
-            umbral_big_noise = 20
+            umbral_medium_noise = 15
             kinect_depth_processor_no_focus.image = np.where(
                 (mask_with_neighbors == 0) &
                 (umbral_noise <= np.abs(kinect_depth_processor_no_focus.image - previous_depth)) &
+                (np.abs(kinect_depth_processor_no_focus.image - previous_depth) <= umbral_medium_noise),
+                (previous_depth * 0.9 + kinect_depth_processor_no_focus.image * 0.1),
+                kinect_depth_processor_no_focus.image
+            )
+
+            umbral_big_noise = 30
+            kinect_depth_processor_no_focus.image = np.where(
+                (mask_with_neighbors == 0) &
+                (umbral_medium_noise <= np.abs(kinect_depth_processor_no_focus.image - previous_depth)) &
                 (np.abs(kinect_depth_processor_no_focus.image - previous_depth) <= umbral_big_noise),
                 (previous_depth + kinect_depth_processor_no_focus.image) // 2,
                 kinect_depth_processor_no_focus.image
             )
 
+            # SAVE PREVIOUS IMAGE
             previous_depth = deepcopy(kinect_depth_processor_no_focus.image)
 
             # APPLY GAUSSIAN FILTER

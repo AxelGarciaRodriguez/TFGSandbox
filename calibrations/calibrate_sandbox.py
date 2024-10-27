@@ -165,25 +165,6 @@ def test_calibrations(kinect, principal_screen, projector_screen):
     ):
         time.sleep(1)
 
-    # PROJECTOR TEST
-    projector_screen.create_window_calibrate(window_name="Test projected Image DEPTH",
-                                             image=kinect_depth_processor.image, fullscreen=True)
-    while projector_screen.check_if_window_active(window_name="Test projected Image DEPTH"):
-        kinect_image_depth = kinect.get_image_calibrate(kinect_frame=KinectFrames.DEPTH)
-        if kinect_image_depth is not None:
-            kinect_depth_processor = ImageProcessorDepth(image=kinect_image_depth)
-            kinect_depth_processor.remove_zeros()
-            kinect_depth_processor.degaussing()
-            kinect_depth_processor.remove_data_between_distance_option_b(min_depth=min_depth, max_depth=max_depth)
-            img_depth_normalized = ((kinect_depth_processor.image - min_depth) / (max_depth - min_depth)) * 255.0
-            kinect_depth_processor.update(image=img_depth_normalized)
-            kinect_depth_processor.transform_dtype()
-            kinect_depth_processor.invert()
-            kinect_depth_processor.apply_colormap()
-
-            projector_screen.update_window_image_calibrate(window_name="Test projected Image DEPTH",
-                                                           image=kinect_depth_processor.image)
-
 
 def main():
     args = get_args()
