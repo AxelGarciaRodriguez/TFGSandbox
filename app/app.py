@@ -97,30 +97,42 @@ def projector_application(projector_screen, kinect):
             # APPLY GAUSSIAN FILTER
             kinect_depth_processor_no_focus.degaussing(ksize=(9, 9))
 
-            # NORMALIZE IMAGE
-            img_depth_normalized = ((kinect_depth_processor_no_focus.image - min_depth) / (max_depth - min_depth)) * 255.0
-            kinect_depth_processor_no_focus.update(image=img_depth_normalized)
-
             # APPLY CAMERA FOCUS
             kinect_image_depth = kinect.apply_camera_focus(kinect_frame=KinectFrames.DEPTH,
                                                            image=kinect_depth_processor_no_focus.image)
 
             kinect_depth_processor = ImageProcessorDepth(image=kinect_image_depth)
 
+            # NORMALIZE IMAGE
+            img_depth_normalized = ((kinect_depth_processor.image - min_depth) / (max_depth - min_depth)) * 255.0
+            kinect_depth_processor.update(image=img_depth_normalized)
+
             # TRANSFORM IMAGE TO 8UNIT
             kinect_depth_processor.transform_dtype()
 
-            levels = np.arange(np.min(kinect_depth_processor.image), np.max(kinect_depth_processor.image), step=10)
-            smooth_contours = []
-            for level in levels:
-                mask_binary = (kinect_depth_processor.image == level).astype(np.uint8)
-                contours_level, _ = cv2.findContours(mask_binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-                for contour in contours_level:
-                    if len(contour) >= 20:
-                        epsilon = 0.0001 * cv2.arcLength(contour, True)
-                        contour_suave = cv2.approxPolyDP(contour, epsilon, True)
+            contours_image = deepcopy(kinect_depth_processor.image)
+            contours_image = cv2.GaussianBlur(contours_image, (11, 11), 0)
 
-                        smooth_contours.append(contour_suave)
+            # levels = np.arange(np.min(contours_image), np.max(contours_image), step=10)
+            smooth_contours = []
+
+            threshold_step = 10
+            min_area = 5
+            epsilon_factor = 0.0001
+
+            for threshold in range(np.min(contours_image), np.max(contours_image), threshold_step):
+                _, mask = cv2.threshold(contours_image, threshold, threshold + threshold_step, cv2.THRESH_BINARY)
+
+                contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+                for contour in contours:
+                    area = cv2.contourArea(contour)
+
+                    if area >= min_area:
+                        epsilon = epsilon_factor * cv2.arcLength(contour, True)
+                        approx_curve = cv2.approxPolyDP(contour, epsilon, True)
+
+                        smooth_contours.append(approx_curve)
 
             # INVERT DATA TO GENERATE INVERSE COLOR MAP
             kinect_depth_processor.invert()
