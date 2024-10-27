@@ -111,8 +111,8 @@ def projector_application(projector_screen, kinect):
             smooth_contours = []
 
             threshold_step = 10
-            min_area = 5
-            epsilon_factor = 0.0001
+            min_area = 500
+            epsilon_factor = 0.000001
 
             for threshold in range(np.min(contours_image), np.max(contours_image), threshold_step):
                 _, mask = cv2.threshold(contours_image, threshold, threshold + threshold_step, cv2.THRESH_BINARY)
