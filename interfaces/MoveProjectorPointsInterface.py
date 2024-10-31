@@ -10,11 +10,12 @@ from image_manager.ImageProcessorRGB import ImageProcessorRGB
 from kinect_controller.KinectController import KinectFrames
 
 
-def instantiate_move_projector_interface(kinect, rgb_points, projector_window, principal_screen,
-                                         window_size=(1920, 1080)):
+def instantiate_move_projector_interface(kinect, rgb_points, projector_window, principal_screen):
+    window_size = (principal_screen.width_resolution - 25, principal_screen.height_resolution - 90)
     calibrate_window = tk.Tk()
     calibrate_window.geometry(
-        f"{window_size[0]+30}x{window_size[1]+30}+{principal_screen.position[0]}+{principal_screen.position[1]}")
+        f"{window_size[0]}x{window_size[1]}+{principal_screen.position[0]}+{principal_screen.position[1]}")
+    window_size = (principal_screen.width_resolution - 30, principal_screen.height_resolution - 130)
     app = MoveProjectorPointsInterface(window=calibrate_window, kinect=kinect, rgb_points=rgb_points,
                                        projector_window=projector_window, window_size=window_size)
     calibrate_window.mainloop()

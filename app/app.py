@@ -3,13 +3,8 @@ import logging
 import sys
 import threading
 from copy import deepcopy
-import tkinter as tk
-from tkinter import ttk, messagebox
 
 import cv2
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import matplotlib.pyplot as plt
-from PIL import Image, ImageTk
 import numpy as np
 from image_manager.ImageProcessorDepth import ImageProcessorDepth
 from interfaces.SelectorScreenInterface import selector_screens
@@ -43,6 +38,10 @@ def projector_application(projector_screen, kinect):
 
     # INSTANTIATE PROJECTOR APP
     previous_depth = kinect.get_image_calibrate(kinect_frame=KinectFrames.DEPTH, avoid_camera_focus=True)
+    kinect_depth_processor_previous = ImageProcessorDepth(image=previous_depth)
+    kinect_depth_processor_previous.remove_zeros()
+    kinect_depth_processor_previous.remove_data_between_distance_option_c(min_depth=min_depth, max_depth=max_depth)
+    previous_depth = kinect_depth_processor_previous.image
 
     kernel = np.ones((3, 3), np.uint8)
 
@@ -59,8 +58,8 @@ def projector_application(projector_screen, kinect):
 
             # COMBINE WITH PREVIOUS IMAGE (APPLY MASK)
             mask_out_of_range = ((kinect_depth_processor_no_focus.image > max_depth) | (
-                        kinect_depth_processor_no_focus.image < min_depth)).astype(np.uint8)
-            mask_with_neighbors = cv2.dilate(mask_out_of_range, kernel, iterations=3)
+                    kinect_depth_processor_no_focus.image < min_depth)).astype(np.uint8)
+            mask_with_neighbors = cv2.dilate(mask_out_of_range, kernel, iterations=30)
 
             kinect_depth_processor_no_focus.image = np.where(mask_with_neighbors == 1, previous_depth,
                                                              kinect_depth_processor_no_focus.image)
@@ -113,12 +112,11 @@ def projector_application(projector_screen, kinect):
             contours_image = deepcopy(kinect_depth_processor.image)
             contours_image = cv2.GaussianBlur(contours_image, (11, 11), 0)
 
-            # levels = np.arange(np.min(contours_image), np.max(contours_image), step=10)
             smooth_contours = []
 
             threshold_step = 10
-            min_area = 5
-            epsilon_factor = 0.0001
+            min_area = 500
+            epsilon_factor = 0.000001
 
             for threshold in range(np.min(contours_image), np.max(contours_image), threshold_step):
                 _, mask = cv2.threshold(contours_image, threshold, threshold + threshold_step, cv2.THRESH_BINARY)
