@@ -38,6 +38,10 @@ def projector_application(projector_screen, kinect):
 
     # INSTANTIATE PROJECTOR APP
     previous_depth = kinect.get_image_calibrate(kinect_frame=KinectFrames.DEPTH, avoid_camera_focus=True)
+    kinect_depth_processor_previous = ImageProcessorDepth(image=previous_depth)
+    kinect_depth_processor_previous.remove_zeros()
+    kinect_depth_processor_previous.remove_data_between_distance_option_c(min_depth=min_depth, max_depth=max_depth)
+    previous_depth = kinect_depth_processor_previous.image
 
     kernel = np.ones((3, 3), np.uint8)
 
