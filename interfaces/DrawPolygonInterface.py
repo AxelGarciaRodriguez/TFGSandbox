@@ -3,10 +3,12 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 
 
-def instantiate_draw_polygon_interface(image, depth_image, principal_screen, window_size=(1920, 1080)):
+def instantiate_draw_polygon_interface(image, depth_image, principal_screen):
+    window_size = (principal_screen.width_resolution - 25, principal_screen.height_resolution - 90)
     calibrate_window = tk.Tk()
     calibrate_window.geometry(
-        f"{window_size[0]+30}x{window_size[1]+30}+{principal_screen.position[0]}+{principal_screen.position[1]}")
+        f"{window_size[0]}x{window_size[1]}+{principal_screen.position[0]}+{principal_screen.position[1]}")
+    window_size = (principal_screen.width_resolution - 30, principal_screen.height_resolution - 130)
     app = DrawPolygonInterface(window=calibrate_window, image=image,
                                depth_image=depth_image, window_size=window_size)
     calibrate_window.mainloop()

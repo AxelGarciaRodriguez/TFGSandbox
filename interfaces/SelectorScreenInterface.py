@@ -49,10 +49,7 @@ class SelectorScreenInterface:
         tk.Label(self.frame, text="Seleccione pantalla principal:").grid(row=0, column=0, padx=5, pady=5)
         self.main_screen_combobox = ttk.Combobox(self.frame, values=screen_names)
         self.main_screen_combobox.grid(row=0, column=1, padx=5, pady=5)
-        if len(screen_names) > PRINCIPAL_SCREEN_INDEX:
-            self.main_screen_combobox.current(PRINCIPAL_SCREEN_INDEX)
-        else:
-            self.main_screen_combobox.current(0)
+        self.main_screen_combobox.current(0)
 
         tk.Label(self.frame, text="Seleccione pantalla del proyector:").grid(row=1, column=0, padx=5, pady=5)
         self.projector_screen_combobox = ttk.Combobox(self.frame, values=screen_names)
