@@ -3,11 +3,12 @@ import logging
 import os
 import sys
 
-from image_manager.ImageBase import ImageBase
+from calibrations.CalibrateStereoFile import CalibrationStereoClass
+from image_management.ImageObject import ImageObject
+from image_management.ImageTransformerDepth import ImageTransformerDepth
+from image_management.ImageTransformerIR import ImageTransformerIR
+from image_management.ImageTransformerRGB import ImageTransformerRGB
 from image_manager.ImageGenerator import ImageGenerator
-from image_manager.ImageProcessorDepth import ImageProcessorDepth
-from image_manager.ImageProcessorIR import ImageProcessorIR
-from image_manager.ImageProcessorRGB import ImageProcessorRGB
 from interfaces.CalibrateKinectInterface import instantiate_calibrate_kinect_interface
 from interfaces.SelectorScreenInterface import selector_screens
 from kinect_controller.KinectController import KinectController
@@ -39,19 +40,17 @@ def load_kinect_images(path):
 
         for image_file in os.listdir(tmp_kinect_image_path):
             if image_file.endswith(".jpg"):
+                image_path = os.path.join(tmp_kinect_image_path, image_file)
                 if type_image == KinectFrames.DEPTH.name:
-                    image_processor = ImageProcessorDepth(
-                        image_absolute_path=os.path.join(tmp_kinect_image_path, image_file))
+                    image_obj = ImageObject(image_absolute_path=image_path, image_transform_class=ImageTransformerDepth)
                 elif type_image == KinectFrames.INFRARED.name:
-                    image_processor = ImageProcessorIR(
-                        image_absolute_path=os.path.join(tmp_kinect_image_path, image_file))
+                    image_obj = ImageObject(image_absolute_path=image_path, image_transform_class=ImageTransformerIR)
                 else:
-                    image_processor = ImageProcessorRGB(
-                        image_absolute_path=os.path.join(tmp_kinect_image_path, image_file))
+                    image_obj = ImageObject(image_absolute_path=image_path, image_transform_class=ImageTransformerRGB)
 
                 if image_file not in previous_images.keys():
                     previous_images[image_file] = {}
-                previous_images[image_file][type_image] = image_processor
+                previous_images[image_file][type_image] = image_obj
 
     return previous_images
 
@@ -76,7 +75,7 @@ def calibrate_kinect(kinect, principal_screen, projector_screen, use_previous_im
 
     # Read necessary images for calibration
     background_color_image = ImageGenerator.generate_color_image(shape=projector_screen.screen_resolution)
-    not_found_image = ImageBase(
+    not_found_image = ImageObject(
         image_absolute_path=generate_relative_path([IMAGE_BASE_PATH, NOT_FOUND_IMAGE_NAME])).image
 
     # Initiate process
@@ -94,8 +93,10 @@ def calibrate_kinect(kinect, principal_screen, projector_screen, use_previous_im
     for type_image in CALIBRATE_PATTERN_IMAGES:
         kinect.kinect_calibrations[type_image].set_calibrations(calibration=app.camera_information[type_image])
 
+    # CALIBRATE STEREO
     # TODO CHECK IF THIS IS CORRECT OR NOT
-    kinect.kinect_calibrations[KinectFrames.DEPTH.name].set_calibrations(calibration=app.camera_information[KinectFrames.INFRARED.name])
+    kinect.kinect_calibrations[KinectFrames.DEPTH.name].set_calibrations(
+        calibration=app.camera_information[KinectFrames.INFRARED.name])
     kinect.save_calibrations()
 
     # Close all windows in main screen and projector screen
