@@ -1,10 +1,11 @@
-from kinect_module import PyKinectV2
 from kinect_module.PyKinectV2 import *
 
 import ctypes
 import sys
 import numpy
 import time
+
+from kinect_module import PyKinectV2
 
 if sys.hexversion >= 0x03000000:
     import _thread as thread
@@ -381,7 +382,7 @@ class PyKinectRuntime(object):
                     self._body_frame_bodies = KinectBodyFrameData(bodyFrame, self._body_frame_data, self.max_body_count)
                     self._last_body_frame_time = time.perf_counter()
 
-                # need these 2 lines as a workaround for handling IBody referencing exception 
+                # need these 2 lines as a workaround for handling IBody referencing exception
                 self._body_frame_data = None
                 self._body_frame_data = ctypes.cast(self._body_frame_data_type(), ctypes.POINTER(ctypes.POINTER(IBody)))
 
@@ -491,3 +492,4 @@ class KinectBodyFrameData(object):
         res.relative_time = self.relative_time
         res.bodies = numpy.copy(self.bodies)
         return res
+

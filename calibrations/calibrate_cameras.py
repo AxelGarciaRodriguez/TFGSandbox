@@ -3,12 +3,11 @@ import logging
 import os
 import sys
 
-from calibrations.CalibrateStereoFile import CalibrationStereoClass
 from image_management.ImageObject import ImageObject
 from image_management.ImageTransformerDepth import ImageTransformerDepth
 from image_management.ImageTransformerIR import ImageTransformerIR
 from image_management.ImageTransformerRGB import ImageTransformerRGB
-from image_manager.ImageGenerator import ImageGenerator
+from image_management.ImageGenerator import ImageGenerator
 from interfaces.CalibrateKinectInterface import instantiate_calibrate_kinect_interface
 from interfaces.SelectorScreenInterface import selector_screens
 from kinect_controller.KinectController import KinectController

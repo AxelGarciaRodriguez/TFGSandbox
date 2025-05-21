@@ -4,9 +4,9 @@ from tkinter import messagebox
 
 from PIL import Image, ImageTk
 
-from image_manager.ImageGenerator import ImageGenerator
-from image_manager.ImageProcessor import ImageProcessor
-from image_manager.ImageProcessorRGB import ImageProcessorRGB
+from image_management.ImageObject import ImageObject
+from image_management.ImageGenerator import ImageGenerator
+from image_management.ImageTransformerBase import ImageTransformerBase
 from kinect_controller.KinectController import KinectFrames
 
 
@@ -115,7 +115,9 @@ class MoveProjectorPointsInterface:
     def draw_projector_point(self):
         # IMAGE BASE
         self.image_processor_projector.restore()
-        self.image_processor_projector.draw_point(point=self.actual_point_projector, radius=3, color=(255, 255, 255))
+        image = ImageTransformerBase.draw_point(image=self.image_processor_projector.image,
+                                                point=self.actual_point_projector, radius=3, color=(255, 255, 255))
+        self.image_processor_projector.update(image=image)
         self.projector_window.update_image(image=self.image_processor_projector.image)
 
     def save_project_point(self):
@@ -124,7 +126,7 @@ class MoveProjectorPointsInterface:
     def update_background_loop(self):
         if self.kinect.check_if_new_image(kinect_frame=KinectFrames.COLOR):
             image_kinect = self.kinect.get_image_calibrate(kinect_frame=KinectFrames.COLOR, avoid_camera_focus=True)
-            self.image_processor_kinect = ImageProcessorRGB(image=image_kinect)
+            self.image_processor_kinect = ImageObject(image=image_kinect)
             self.show_kinect_image()
 
         self.window.after(30, self.update_background_loop)
@@ -132,11 +134,11 @@ class MoveProjectorPointsInterface:
     def get_kinect_image(self):
         if self.kinect.check_if_new_image(kinect_frame=KinectFrames.COLOR):
             image_kinect = self.kinect.get_image(kinect_frame=KinectFrames.COLOR)
-            self.image_processor_kinect = ImageProcessorRGB(image=image_kinect)
+            self.image_processor_kinect = ImageObject(image=image_kinect)
 
     def generate_projector_image(self):
         background_color_image = ImageGenerator.generate_color_image(shape=self.projector_window.resolution)
-        self.image_processor_projector = ImageProcessor(image=background_color_image)
+        self.image_processor_projector = ImageObject(image=background_color_image)
 
     def show_kinect_image(self):
         image = Image.fromarray(self.image_processor_kinect.image[..., ::-1])

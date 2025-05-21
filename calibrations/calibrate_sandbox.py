@@ -1,16 +1,21 @@
 import argparse
+import ctypes
 import logging
 import sys
 import time
 
-from image_manager.ImageGenerator import ImageGenerator
-from image_manager.ImageProcessorDepth import ImageProcessorDepth
-from image_manager.ImageProcessorIR import ImageProcessorIR
-from image_manager.ImageProcessorRGB import ImageProcessorRGB
+import numpy as np
+
+from image_management.ImageObject import ImageObject
+from image_management.ImageTransformerDepth import ImageTransformerDepth
+from image_management.ImageTransformerIR import ImageTransformerIR
+from image_management.ImageTransformerRGB import ImageTransformerRGB
+from image_management.ImageGenerator import ImageGenerator
 from interfaces.DrawPolygonInterface import instantiate_draw_polygon_interface
 from interfaces.MoveProjectorPointsInterface import instantiate_move_projector_interface
 from interfaces.SelectorScreenInterface import selector_screens
 from kinect_controller.KinectController import KinectFrames, KinectController
+from kinect_module.PyKinectV2 import _DepthSpacePoint
 from literals import BOX_HEIGHT
 from utils import generate_cords
 
@@ -35,8 +40,8 @@ def calibrate_kinect_sandbox_rgb(kinect, principal_screen, projector_screen):
     projector_screen.create_window(window_name="FullScreen Projector", image=background_color_image, fullscreen=True)
 
     kinect_image = kinect.get_image_calibrate(kinect_frame=kinect_frame, avoid_camera_focus=True)
-    kinect_processor = ImageProcessorRGB(image=kinect_image)
-    kinect_processor.invert()
+    inverted_image = ImageTransformerRGB.invert(image=kinect_image)
+    kinect_processor = ImageObject(image=inverted_image)
 
     app_draw_polygon = instantiate_draw_polygon_interface(image=kinect_processor.image,
                                                           depth_image=None,
@@ -51,20 +56,55 @@ def calibrate_kinect_sandbox_rgb(kinect, principal_screen, projector_screen):
     projector_screen.close_windows()
 
 
+def depth_image_to_depth_frame(depth_image):
+    depth_image = depth_image.astype(np.uint16)
+
+    depth_array = depth_image.flatten()
+    depth_array_ptr = (ctypes.c_uint16 * len(depth_array))(*depth_array)
+
+    return depth_array_ptr
+
+
 def calibrate_kinect_sandbox_ir_depth(kinect, principal_screen, projector_screen):
+    # kinect_image_depth = kinect.get_image_calibrate(kinect_frame=KinectFrames.DEPTH, avoid_camera_focus=True, avoid_camera_matrix=True)
+    # kinect_processor_depth = ImageObject(image=kinect_image_depth)
+    #
+    # kinect_image_depth_zeros_removed = ImageTransformerDepth.remove_zeros(image=kinect_image_depth)
+    # kinect_processor_depth.update(image=kinect_image_depth_zeros_removed)
+    #
+    # color2depth_points_type = _DepthSpacePoint * int(1920 * 1080)
+    # color2depth_points = ctypes.cast(color2depth_points_type(), ctypes.POINTER(_DepthSpacePoint))
+    #
+    # kinect.kinect._mapper.MapColorFrameToDepthSpace(ctypes.c_uint(512 * 424),
+    #                                          depth_image_to_depth_frame(depth_image=kinect_processor_depth.image),
+    #                                          ctypes.c_uint(1920 * 1080),
+    #                                          color2depth_points)
+    #
+    # min_depth = None
+    # points_2d = []
+    # for color_point in kinect.kinect_calibrations[KinectFrames.COLOR.name].cords:
+    #     color_coords = color2depth_points[int(color_point[1]) * 1920 + int(color_point[0])]
+    #     depth_x = int(color_coords.x)
+    #     depth_y = int(color_coords.y)
+    #     points_2d.append((depth_x, depth_y))
+    #
+    #     depth_z = kinect_processor_depth.image[int(depth_y), int(depth_x)]
+    #     if not min_depth or min_depth < depth_z:
+    #         min_depth = depth_z
+
     kinect_frame = KinectFrames.INFRARED
     logging.info(f"Calibrate {kinect_frame.name} image")
     background_color_image = ImageGenerator.generate_color_image(shape=projector_screen.screen_resolution)
     projector_screen.create_window(window_name="FullScreen Projector", image=background_color_image, fullscreen=True)
 
     kinect_image_depth = kinect.get_image_calibrate(kinect_frame=KinectFrames.DEPTH, avoid_camera_focus=True)
-    kinect_processor_depth = ImageProcessorDepth(image=kinect_image_depth)
-    kinect_processor_depth.remove_zeros()
+    kinect_image_depth = ImageTransformerDepth.remove_zeros(image=kinect_image_depth)
+    kinect_processor_depth = ImageObject(image=kinect_image_depth)
 
     kinect_image_ir = kinect.get_image_calibrate(kinect_frame=kinect_frame, avoid_camera_focus=True)
-    kinect_processor_ir = ImageProcessorIR(image=kinect_image_ir)
-    kinect_processor_ir.normalize()
-    kinect_processor_ir.transform_dtype()
+    kinect_image_ir = ImageTransformerIR.normalize(image=kinect_image_ir)
+    kinect_image_ir = ImageTransformerIR.transform_dtype(image=kinect_image_ir)
+    kinect_processor_ir = ImageObject(image=kinect_image_ir)
 
     app_draw_polygon = instantiate_draw_polygon_interface(image=kinect_processor_ir.image,
                                                           depth_image=kinect_processor_depth.image,
@@ -135,25 +175,27 @@ def test_calibrations(kinect, principal_screen, projector_screen):
     kinect_image_depth = kinect.get_image_calibrate(kinect_frame=KinectFrames.DEPTH)
     kinect_image_infrared = kinect.get_image_calibrate(kinect_frame=KinectFrames.INFRARED)
 
-    kinect_color_processor = ImageProcessorRGB(image=kinect_image_color)
-    kinect_depth_processor = ImageProcessorDepth(image=kinect_image_depth)
-    kinect_infrared_processor = ImageProcessorIR(image=kinect_image_infrared)
+    kinect_color_processor = ImageObject(image=kinect_image_color)
+    kinect_depth_processor = ImageObject(image=kinect_image_depth)
+    kinect_infrared_processor = ImageObject(image=kinect_image_infrared)
 
     # INFRARED MANAGEMENT
-    kinect_infrared_processor.normalize()
-    kinect_infrared_processor.transform_dtype()
+    image = ImageTransformerIR.normalize(image=kinect_infrared_processor.image)
+    image = ImageTransformerIR.transform_dtype(image=image)
+    kinect_infrared_processor.update(image=image)
 
     # DEPTH MANAGEMENT
     min_depth, max_depth = kinect.kinect_calibrations[KinectFrames.DEPTH.name].get_depth()
 
-    kinect_depth_processor.remove_zeros()
-    kinect_depth_processor.degaussing()
-    kinect_depth_processor.remove_data_between_distance_option_b(min_depth=min_depth, max_depth=max_depth)
-    img_depth_normalized = ((kinect_depth_processor.image - min_depth) / (max_depth - min_depth)) * 255.0
-    kinect_depth_processor.update(image=img_depth_normalized)
-    kinect_depth_processor.transform_dtype()
-    kinect_depth_processor.invert()
-    kinect_depth_processor.apply_colormap()
+    image = ImageTransformerDepth.remove_zeros(image=kinect_depth_processor.image)
+    image = ImageTransformerDepth.degaussing(image=image)
+    image = ImageTransformerDepth.remove_data_between_distance(image=image, min_depth=min_depth, max_depth=max_depth)
+    image = ImageTransformerDepth.normalize_between_distance(image=image, min_depth=min_depth, max_depth=max_depth)
+    image = ImageTransformerDepth.transform_dtype(image=image)
+    image = ImageTransformerDepth.invert(image=image)
+    image = ImageTransformerDepth.apply_colormap(image=image)
+
+    kinect_depth_processor.update(image=image)
 
     principal_screen.create_window(window_name="Color Focused", image=kinect_color_processor.image)
     principal_screen.create_window(window_name="Depth Focused", image=kinect_depth_processor.image)
@@ -189,7 +231,7 @@ def main():
                                      projector_screen=projector_screen)
         calibrate_kinect_sandbox_ir_depth(kinect=kinect, principal_screen=principal_screen,
                                           projector_screen=projector_screen)
-        calibrate_projector_sandbox(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
+        # calibrate_projector_sandbox(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
         save_calibrations(kinect=kinect, projector_screen=projector_screen)
         test_calibrations(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
 
