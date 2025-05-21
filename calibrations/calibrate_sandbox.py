@@ -231,7 +231,7 @@ def main():
                                      projector_screen=projector_screen)
         calibrate_kinect_sandbox_ir_depth(kinect=kinect, principal_screen=principal_screen,
                                           projector_screen=projector_screen)
-        # calibrate_projector_sandbox(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
+        calibrate_projector_sandbox(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
         save_calibrations(kinect=kinect, projector_screen=projector_screen)
         test_calibrations(kinect=kinect, principal_screen=principal_screen, projector_screen=projector_screen)
 
