@@ -3,10 +3,10 @@ from datetime import datetime
 from tkinter import messagebox, ttk
 import numpy as np
 
-from image_manager.ImageGenerator import ImageGenerator
-from image_manager.ImageProcessor import ImageProcessor
-from image_manager.ImageProcessorDepth import ImageProcessorDepth
-from image_manager.ImageProcessorIR import ImageProcessorIR
+from image_management.ImageObject import ImageObject
+from image_management.ImageTransformerDepth import ImageTransformerDepth
+from image_management.ImageTransformerIR import ImageTransformerIR
+from image_management.ImageGenerator import ImageGenerator
 from literals import PATTERN_MOVE_SCALAR, PATTERN_RESIZE_SCALAR, KinectFrames
 
 from PIL import Image, ImageTk
@@ -319,19 +319,19 @@ class CalibrateKinectProjectorInterface:
         self.photos_taken[image_name] = {}
         # GET RGB IMAGE
         image = self.kinect.get_image(kinect_frame=KinectFrames.COLOR)
-        image_processor = ImageProcessor(image=image)
+        image_processor = ImageObject(image=image)
         self.photos_taken[image_name][KinectFrames.COLOR.name] = image_processor
 
         # GET DEPTH IMAGE
         image = self.kinect.get_image(kinect_frame=KinectFrames.DEPTH)
-        image_processor = ImageProcessorDepth(image=image)
-        image_processor.normalize()
+        image = ImageTransformerDepth.normalize(image=image)
+        image_processor = ImageObject(image=image)
         self.photos_taken[image_name][KinectFrames.DEPTH.name] = image_processor
 
         # GET IR IMAGE
         image = self.kinect.get_image(kinect_frame=KinectFrames.INFRARED)
-        image_processor = ImageProcessorIR(image=image)
-        image_processor.normalize()
+        image = ImageTransformerIR.normalize(image=image)
+        image_processor = ImageObject(image=image)
         self.photos_taken[image_name][KinectFrames.INFRARED.name] = image_processor
 
         # SAVE PROJECTOR IMAGE

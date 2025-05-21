@@ -3,6 +3,7 @@ typelib_path = 'c:\\Users\\vladkol\\Documents\\PyKinect2\\idl\\Kinect.tlb'
 _lcid = 0  # change this if required
 import ctypes
 import comtypes
+from ctypes import *
 from comtypes import *
 from comtypes import GUID
 from ctypes import HRESULT
@@ -10,15 +11,14 @@ from comtypes import COMMETHOD
 
 STRING = c_char_p
 INT_PTR = c_int
-from ctypes.wintypes import LARGE_INTEGER
-from ctypes.wintypes import ULARGE_INTEGER
-from ctypes.wintypes import FILETIME
+from ctypes.wintypes import LARGE_INTEGER as _LARGE_INTEGER
+from ctypes.wintypes import ULARGE_INTEGER as _ULARGE_INTEGER
+from ctypes.wintypes import ULARGE_INTEGER as _ULARGE_INTEGER
+from ctypes.wintypes import FILETIME as _FILETIME
 
 WSTRING = c_wchar_p
 
 comtypes.hresult.E_PENDING = 0x8000000A
-
-import numpy.distutils.system_info as sysinfo
 
 
 class _event(object):
@@ -308,7 +308,7 @@ IAudioBeamFrameReader._methods_ = [
 ##
 ##    def UnsubscribeFrameArrived(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    def _get(self):
 ##        '-no docstring-'
@@ -485,7 +485,7 @@ IColorFrameSource._methods_ = [
 ##class IColorFrameSource_Impl(object):
 ##    def UnsubscribeFrameCaptured(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    @property
 ##    def KinectSensor(self):
@@ -632,7 +632,7 @@ ILongExposureInfraredFrameReader._methods_ = [
 ##
 ##    def UnsubscribeFrameArrived(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    def _get(self):
 ##        '-no docstring-'
@@ -802,7 +802,7 @@ IBodyFrameSource._methods_ = [
 ##class IBodyFrameSource_Impl(object):
 ##    def UnsubscribeFrameCaptured(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    @property
 ##    def KinectSensor(self):
@@ -815,11 +815,11 @@ IBodyFrameSource._methods_ = [
 ##
 ##    def OverrideHandTracking(self, TrackingId):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    def OverrideAndReplaceHandTracking(self, oldTrackingId, newTrackingId):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    def GetFrameCapturedEventData(self, waitableHandle):
 ##        '-no docstring-'
@@ -911,7 +911,7 @@ IColorFrameReader._methods_ = [
 ##
 ##    def UnsubscribeFrameArrived(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    @property
 ##    def ColorFrameSource(self):
@@ -995,7 +995,7 @@ IDepthFrameSource._methods_ = [
 ##class IDepthFrameSource_Impl(object):
 ##    def UnsubscribeFrameCaptured(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    @property
 ##    def KinectSensor(self):
@@ -1166,7 +1166,7 @@ IBodyFrameReader._methods_ = [
 ##
 ##    def UnsubscribeFrameArrived(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    @property
 ##    def BodyFrameSource(self):
@@ -1290,7 +1290,7 @@ IAudioSource._methods_ = [
 ##class IAudioSource_Impl(object):
 ##    def UnsubscribeFrameCaptured(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    @property
 ##    def KinectSensor(self):
@@ -1404,7 +1404,7 @@ IBodyIndexFrameReader._methods_ = [
 ##
 ##    def UnsubscribeFrameArrived(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    def _get(self):
 ##        '-no docstring-'
@@ -1567,7 +1567,7 @@ IDepthFrameReader._methods_ = [
 ##
 ##    def UnsubscribeFrameArrived(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    def _get(self):
 ##        '-no docstring-'
@@ -1612,7 +1612,7 @@ IBodyIndexFrameSource._methods_ = [
 ##class IBodyIndexFrameSource_Impl(object):
 ##    def UnsubscribeFrameCaptured(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    @property
 ##    def KinectSensor(self):
@@ -1862,26 +1862,26 @@ class tagSTATSTG(Structure):
 
 IStream._methods_ = [
     COMMETHOD([], HRESULT, 'RemoteSeek',
-              (['in'], LARGE_INTEGER, 'dlibMove'),
+              (['in'], _LARGE_INTEGER, 'dlibMove'),
               (['in'], c_ulong, 'dwOrigin'),
-              ([], POINTER(ULARGE_INTEGER), 'plibNewPosition')),
+              ([], POINTER(_ULARGE_INTEGER), 'plibNewPosition')),
     COMMETHOD([], HRESULT, 'SetSize',
-              (['in'], ULARGE_INTEGER, 'libNewSize')),
+              (['in'], _ULARGE_INTEGER, 'libNewSize')),
     COMMETHOD([], HRESULT, 'RemoteCopyTo',
               (['in'], POINTER(IStream), 'pstm'),
-              (['in'], ULARGE_INTEGER, 'cb'),
-              ([], POINTER(ULARGE_INTEGER), 'pcbRead'),
-              ([], POINTER(ULARGE_INTEGER), 'pcbWritten')),
+              (['in'], _ULARGE_INTEGER, 'cb'),
+              ([], POINTER(_ULARGE_INTEGER), 'pcbRead'),
+              ([], POINTER(_ULARGE_INTEGER), 'pcbWritten')),
     COMMETHOD([], HRESULT, 'Commit',
               (['in'], c_ulong, 'grfCommitFlags')),
     COMMETHOD([], HRESULT, 'Revert'),
     COMMETHOD([], HRESULT, 'LockRegion',
-              (['in'], ULARGE_INTEGER, 'libOffset'),
-              (['in'], ULARGE_INTEGER, 'cb'),
+              (['in'], _ULARGE_INTEGER, 'libOffset'),
+              (['in'], _ULARGE_INTEGER, 'cb'),
               (['in'], c_ulong, 'dwLockType')),
     COMMETHOD([], HRESULT, 'UnlockRegion',
-              (['in'], ULARGE_INTEGER, 'libOffset'),
-              (['in'], ULARGE_INTEGER, 'cb'),
+              (['in'], _ULARGE_INTEGER, 'libOffset'),
+              (['in'], _ULARGE_INTEGER, 'cb'),
               (['in'], c_ulong, 'dwLockType')),
     COMMETHOD([], HRESULT, 'Stat',
               ([], POINTER(tagSTATSTG), 'pstatstg'),
@@ -1902,7 +1902,7 @@ IStream._methods_ = [
 ##
 ##    def UnlockRegion(self, libOffset, cb, dwLockType):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    def Clone(self):
 ##        '-no docstring-'
@@ -1910,7 +1910,7 @@ IStream._methods_ = [
 ##
 ##    def Revert(self):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    def RemoteCopyTo(self, pstm, cb):
 ##        '-no docstring-'
@@ -1918,15 +1918,15 @@ IStream._methods_ = [
 ##
 ##    def LockRegion(self, libOffset, cb, dwLockType):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    def Commit(self, grfCommitFlags):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    def SetSize(self, libNewSize):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 
 IDepthFrameReference._methods_ = [
@@ -2130,7 +2130,7 @@ ILongExposureInfraredFrameSource._methods_ = [
 ##class ILongExposureInfraredFrameSource_Impl(object):
 ##    def UnsubscribeFrameCaptured(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    @property
 ##    def KinectSensor(self):
@@ -2363,7 +2363,7 @@ ICoordinateMapper._methods_ = [
 ##
 ##    def UnsubscribeCoordinateMappingChanged(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    def MapCameraPointsToColorSpace(self, cameraPointCount, cameraPoints, colorPointCount):
 ##        '-no docstring-'
@@ -2393,17 +2393,27 @@ ICoordinateMapper._methods_ = [
 tagSTATSTG._fields_ = [
     ('pwcsName', WSTRING),
     ('type', c_ulong),
-    ('cbSize', ULARGE_INTEGER),
-    ('mtime', FILETIME),
-    ('ctime', FILETIME),
-    ('atime', FILETIME),
+    ('cbSize', _ULARGE_INTEGER),
+    ('mtime', _FILETIME),
+    ('ctime', _FILETIME),
+    ('atime', _FILETIME),
     ('grfMode', c_ulong),
     ('grfLocksSupported', c_ulong),
     ('clsid', GUID),
     ('grfStateBits', c_ulong),
     ('reserved', c_ulong),
 ]
-required_size = 64 + sysinfo.platform_bits / 4
+
+# Test version to replace numpy.distutils which is deprecated
+import struct
+
+
+def get_platform_bits():
+    return 64 if struct.calcsize('P') * 8 == 64 else 32
+
+
+platform_bits = get_platform_bits()
+required_size = 64 + platform_bits / 4
 
 assert sizeof(tagSTATSTG) == required_size, sizeof(tagSTATSTG)
 assert alignment(tagSTATSTG) == 8, alignment(tagSTATSTG)
@@ -2484,7 +2494,7 @@ IInfraredFrameReader._methods_ = [
 ##
 ##    def UnsubscribeFrameArrived(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    def _get(self):
 ##        '-no docstring-'
@@ -2524,7 +2534,7 @@ IInfraredFrameSource._methods_ = [
 ##class IInfraredFrameSource_Impl(object):
 ##    def UnsubscribeFrameCaptured(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    @property
 ##    def KinectSensor(self):
@@ -2665,7 +2675,7 @@ IEnumKinectSensor._methods_ = [
 ##
 ##    def Reset(self):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 
 IBodyFrame._methods_ = [
@@ -2828,7 +2838,7 @@ IKinectSensor._methods_ = [
 ##
 ##    def UnsubscribeIsAvailableChanged(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    @property
 ##    def ColorFrameSource(self):
@@ -2852,7 +2862,7 @@ IKinectSensor._methods_ = [
 ##
 ##    def Close(self):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    @property
 ##    def IsAvailable(self):
@@ -2861,7 +2871,7 @@ IKinectSensor._methods_ = [
 ##
 ##    def Open(self):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    @property
 ##    def CoordinateMapper(self):
@@ -2956,7 +2966,7 @@ IMultiSourceFrameReader._methods_ = [
 ##
 ##    def UnsubscribeMultiSourceFrameArrived(self, waitableHandle):
 ##        '-no docstring-'
-##        #return 
+##        #return
 ##
 ##    def SubscribeMultiSourceFrameArrived(self):
 ##        '-no docstring-'

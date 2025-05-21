@@ -4,16 +4,18 @@ import os
 import cv2
 import numpy as np
 
+from image_management.ImageTransformerBase import ImageTransformerBase
 from literals import CAMERA_CALIBRATION_VARIABLE, CAMERA_DISTORTION_VARIABLE, CAMERA_ROTATION_VARIABLE, \
     CAMERA_TRANSLATION_VARIABLE, OBJ_POINTS_KEY, IMG_POINTS_KEY, FOCUS_HOMOGRAPHY_VARIABLE, \
     FOCUS_INV_HOMOGRAPHY_VARIABLE, FOCUS_CORDS_VARIABLE, FOCUS_CORDS_ORIGINAL_VARIABLE, \
-    FOCUS_DIMENSION_ORIGINAL_VARIABLE, MIN_DEPTH_VARIABLE, MAX_DEPTH_VARIABLE, STANDARD_MIN_DEPTH, STANDARD_MAX_DEPTH
+    FOCUS_DIMENSION_ORIGINAL_VARIABLE, MIN_DEPTH_VARIABLE, MAX_DEPTH_VARIABLE, STANDARD_MIN_DEPTH, STANDARD_MAX_DEPTH, \
+    IMG_SHAPE_KEY
 from utils import generate_folders, ordering_points
 
 
 class CalibrationClass:
     def __init__(self, cords=None, original_cords=None, matrix_homography=None,
-                 matrix_inverse_homography=None, obj_points=None, img_points=None, camera_matrix=None,
+                 matrix_inverse_homography=None, obj_points=None, img_points=None, image_shape=None, camera_matrix=None,
                  cof_distortion=None, camera_rotation=None, camera_translation=None, calibration_path_file=None):
         # FOCUS
         self.cords = cords
@@ -28,6 +30,7 @@ class CalibrationClass:
         # CALIBRATION
         self.obj_points = obj_points
         self.img_points = img_points
+        self.image_shape = image_shape
         self.camera_matrix = camera_matrix
         self.cof_distortion = cof_distortion
         self.camera_rotation = camera_rotation
@@ -49,7 +52,8 @@ class CalibrationClass:
             self.obj_points = calibration[OBJ_POINTS_KEY]
         if IMG_POINTS_KEY in calibration.keys():
             self.img_points = calibration[IMG_POINTS_KEY]
-
+        if IMG_SHAPE_KEY in calibration.keys():
+            self.image_shape = calibration[IMG_SHAPE_KEY]
         if FOCUS_HOMOGRAPHY_VARIABLE in calibration.keys():
             self.matrix_homography = calibration[FOCUS_HOMOGRAPHY_VARIABLE]
         if FOCUS_INV_HOMOGRAPHY_VARIABLE in calibration.keys():
@@ -101,6 +105,8 @@ class CalibrationClass:
             arguments_saved[OBJ_POINTS_KEY] = self.obj_points
         if self.img_points is not None:
             arguments_saved[IMG_POINTS_KEY] = self.img_points
+        if self.image_shape is not None:
+            arguments_saved[IMG_SHAPE_KEY] = self.image_shape
 
         if self.matrix_homography is not None:
             arguments_saved[FOCUS_HOMOGRAPHY_VARIABLE] = self.matrix_homography
@@ -154,20 +160,16 @@ class CalibrationClass:
 
     def applied_camera_calibration(self, image):
         if self.camera_matrix is not None and self.cof_distortion is not None:
-            image = cv2.undistort(image, self.camera_matrix, self.cof_distortion)
+            return ImageTransformerBase.distort(image=image, camera_matrix=self.camera_matrix,
+                                                distortion_coefficients=self.cof_distortion)
         return image
 
     @staticmethod
     def _applied_camera_matrix(image, matrix, output_size=None):
         if matrix is not None:
-            if not output_size:
-                height, width = image.shape[:2]
-                output_size = (width, height)
-            else:
-                image = cv2.resize(image, output_size, interpolation=cv2.INTER_AREA)
-
-            image = cv2.warpPerspective(image, matrix, output_size)
-
+            if output_size:
+                image = ImageTransformerBase.resize(image=image, width=output_size[0], height=output_size[1])
+            return ImageTransformerBase.warp_perspective(image=image, warp_matrix=matrix, output_size=output_size)
         return image
 
     def applied_camera_focus(self, image, output_size=None):

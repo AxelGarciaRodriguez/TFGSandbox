@@ -1,5 +1,6 @@
 import cv2
 
+from calibrations.CalibrateStereoFile import CalibrationStereoClass
 from kinect_controller.KinectController import KinectController
 from literals import KinectFrames
 
@@ -51,12 +52,30 @@ def show_depth_point(x_depth, y_depth):
 # Cargar las imágenes RGB y de profundidad
 kinect = KinectController(kinect_frames=[KinectFrames.COLOR, KinectFrames.DEPTH, KinectFrames.INFRARED])
 
-img_depth = kinect.get_image(kinect_frame=KinectFrames.DEPTH)
-img_depth = cv2.convertScaleAbs(img_depth, alpha=255 / 4500)
-img_rgb = kinect.get_image(kinect_frame=KinectFrames.COLOR)
+# img_depth = kinect.get_image(kinect_frame=KinectFrames.DEPTH)
+# img_depth = cv2.convertScaleAbs(img_depth, alpha=255 / 4500)
+# img_rgb = kinect.get_image(kinect_frame=KinectFrames.COLOR)
+
+img_rgb = kinect.get_image_calibrate(kinect_frame=KinectFrames.COLOR, avoid_camera_focus=True, avoid_camera_matrix=False)
+img_depth = kinect.get_image_calibrate(kinect_frame=KinectFrames.INFRARED, avoid_camera_focus=True, avoid_camera_matrix=False)
 
 height_rgb, width_rgb = img_rgb.shape[:2]
 height_depth, width_depth = img_depth.shape[:2]
+
+cv2.imshow('Imagen RGB', img_rgb)
+cv2.imshow('Imagen de Profundidad', img_depth)
+
+cv2.setMouseCallback('Imagen RGB', on_mouse_event_rgb)
+cv2.setMouseCallback('Imagen de Profundidad', on_mouse_event_depth)
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+stereo_calibration = CalibrationStereoClass(
+    calibration_file_camera_1=kinect.kinect_calibrations[KinectFrames.COLOR.name],
+    calibration_file_camera_2=kinect.kinect_calibrations[KinectFrames.INFRARED.name])
+
+img_rgb, img_depth = stereo_calibration.calculate_stereo_matrix(rgb_image=img_rgb, ir_image=img_depth)
 
 cv2.imshow('Imagen RGB', img_rgb)
 cv2.imshow('Imagen de Profundidad', img_depth)
