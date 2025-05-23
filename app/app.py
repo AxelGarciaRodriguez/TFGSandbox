@@ -8,8 +8,7 @@ import numpy as np
 
 from image_management.ApplicationController import SharedConfig
 from image_management.ImageTransformerDepth import ImageTransformerDepth
-from image_management.ImageTransformerRGB import ImageTransformerRGB
-from interfaces.PrincipalApplicationInterface import start_gui
+from interfaces.PrincipalApplicationInterface import instantiate_principal_application_interface
 from interfaces.SelectorScreenInterface import selector_screens
 from kinect_controller.KinectController import KinectController
 from literals import KinectFrames, ConfigControllerEnum, CONTOURS_EPSILON_FACTOR, CONTOURS_MIN_AREA
@@ -189,7 +188,7 @@ def main():
                                                     args=(projector_screen, kinect, config))
     projector_application_thread.start()
 
-    start_gui(config=config)
+    instantiate_principal_application_interface(config=config, principal_screen=principal_screen)
 
     projector_application_thread.join()
 
