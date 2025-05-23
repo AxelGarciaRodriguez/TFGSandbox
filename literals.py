@@ -94,8 +94,8 @@ class ConfigControllerNamesEnum(enum.Enum):
 
 class ConfigControllerSliderEnum(enum.Enum):
     CONTOURS_LEVEL_STEPS = [1, 30]
-    ERRORS_UMBRAL = [0, 30]
-    MEDIUM_NOISE = [15, 45]
-    BIG_NOISE = [30, 80]
+    ERRORS_UMBRAL = [0, 50]
+    MEDIUM_NOISE = [0, 50]
+    BIG_NOISE = [0, 50]
 
 # endregion
