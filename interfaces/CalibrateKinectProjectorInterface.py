@@ -7,6 +7,7 @@ from image_management.ImageObject import ImageObject
 from image_management.ImageTransformerDepth import ImageTransformerDepth
 from image_management.ImageTransformerIR import ImageTransformerIR
 from image_management.ImageGenerator import ImageGenerator
+from image_management.ImageTransformerRGB import ImageTransformerRGB
 from literals import PATTERN_MOVE_SCALAR, PATTERN_RESIZE_SCALAR, KinectFrames
 
 from PIL import Image, ImageTk
@@ -210,11 +211,12 @@ class CalibrateKinectProjectorInterface:
             self.index_label.config(text=f"0 / 0")
             return
 
-        image_processor = list(self.photos_taken.values())[self.current_index][KinectFrames.INFRARED.name]
-        image_processor.normalize()
-        image_processor.transform_dtype()
+        image_object = list(self.photos_taken.values())[self.current_index][KinectFrames.COLOR.name]
+        # image = ImageTransformerIR.normalize(image=image_object.image)
+        # image = ImageTransformerIR.transform_dtype(image=image)
+        # image_object.update(image=image)
 
-        image = Image.fromarray(image_processor.image)
+        image = Image.fromarray(image_object.image)
         image = image.resize(self.window_image_size)
         photo = ImageTk.PhotoImage(image)
         self.last_image.config(image=photo)
@@ -391,11 +393,11 @@ class CalibrateKinectProjectorInterface:
             if image_name in self.object_points.keys():
                 continue
 
-            ir_img = image_map[KinectFrames.INFRARED.name]
-            self.image_shape = ir_img.image_shape
+            color_img = image_map[KinectFrames.COLOR.name]
+            self.image_shape = color_img.image_shape
             depth_img = image_map[KinectFrames.DEPTH.name]
 
-            ret, corners = ir_img.find_chessboard_corners(pattern_size=self.pattern_size)
+            ret, corners = ImageTransformerRGB.find_chessboard_corners(image=color_img, pattern_size=self.pattern_size)
             if ret:
                 self.object_points[image_name] = pattern_points
                 self.image_points[image_name] = corners
@@ -412,7 +414,8 @@ class CalibrateKinectProjectorInterface:
                 # self.depth_points[image_name] = depth_points
 
                 # TODO ADD SUBPIX???
-                ir_img.draw_chessboard_corners(pattern_size=self.pattern_size, corners=corners)
+                color_img = ImageTransformerRGB.draw_chessboard_corners(image=color_img, pattern_size=self.pattern_size,
+                                                                        corners=corners)
             else:
                 # Delete image
                 image_names_to_delete.append(image_name)
