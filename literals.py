@@ -1,6 +1,8 @@
 # region Kinect Control
 import enum
 
+import cv2
+
 from kinect_module import PyKinectV2
 
 KINECT_MAX_CHECKS_CONNECTION = 5
@@ -64,15 +66,36 @@ NOT_FOUND_IMAGE_NAME = "not_found_image.png"
 BOX_HEIGHT = 250
 STANDARD_MIN_DEPTH = 500
 STANDARD_MAX_DEPTH = 3000
-
-CONTOURS_LEVEL_STEPS = 10
-CONTOURS_MIN_AREA = 500
 CONTOURS_EPSILON_FACTOR = 0.000001
+CONTOURS_MIN_AREA = 500
 
-ERRORS_UMBRAL = 5
-MEDIUM_NOISE = 15
-BIG_NOISE = 30
-NO_SENSE_CHANGES = 80
 
+class ConfigControllerEnum(enum.Enum):
+    MIN_DEPTH = STANDARD_MIN_DEPTH
+    MAX_DEPTH = STANDARD_MAX_DEPTH
+    CONTOURS_LEVEL_STEPS = 10
+    ERRORS_UMBRAL = 5
+    MEDIUM_NOISE = 15
+    BIG_NOISE = 30
+    NO_SENSE_CHANGES = 80
+    COLORMAP = cv2.COLORMAP_JET
+    RESET_IMAGE = False
+
+
+class ConfigControllerNamesEnum(enum.Enum):
+    MIN_DEPTH = "Profundidad Mínima (mm)"
+    MAX_DEPTH = 'Profundidad máxima (mm)'
+    CONTOURS_LEVEL_STEPS = 'Niveles de contorno'
+    ERRORS_UMBRAL = 'Umbral de error'
+    MEDIUM_NOISE = 'Ruido medio'
+    BIG_NOISE = 'Ruido alto'
+    COLORMAP = 'Mapa de color'
+
+
+class ConfigControllerSliderEnum(enum.Enum):
+    CONTOURS_LEVEL_STEPS = [1, 30]
+    ERRORS_UMBRAL = [0, 30]
+    MEDIUM_NOISE = [15, 45]
+    BIG_NOISE = [30, 80]
 
 # endregion
