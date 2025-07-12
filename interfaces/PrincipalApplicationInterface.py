@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import cv2
+import numpy as np
 
 from PIL import Image, ImageTk
 
@@ -55,6 +56,16 @@ class PrincipalApplicationInterface:
             else:
                 self.entries[config_name.name] = self.add_entry(self.controls_frame, config_name.value,
                                                                 config_name.name)
+
+        tk.Label(self.controls_frame, text="Contraste RGB (alpha)").pack(anchor="w")
+        self.alpha_slider = tk.Scale(self.controls_frame, from_=0.5, to=2.0, resolution=0.1, orient="horizontal")
+        self.alpha_slider.set(0.9)
+        self.alpha_slider.pack(fill='x')
+
+        tk.Label(self.controls_frame, text="Brillo RGB (beta)").pack(anchor="w")
+        self.beta_slider = tk.Scale(self.controls_frame, from_=-100, to=100, resolution=1, orient="horizontal")
+        self.beta_slider.set(-30)
+        self.beta_slider.pack(fill='x')
 
         tk.Button(self.controls_frame, text="Reiniciar Imagen", command=self.reset_image).pack(pady=5)
 
@@ -147,7 +158,20 @@ class PrincipalApplicationInterface:
             self.image_label.image = tk_img
 
         if second is not None:
-            rgb2 = cv2.cvtColor(second, cv2.COLOR_BGR2RGB)
+            if len(second.shape) == 2:
+                second = cv2.cvtColor(second, cv2.COLOR_GRAY2BGR)
+            elif second.shape[2] == 4:
+                second = cv2.cvtColor(second, cv2.COLOR_BGRA2BGR)
+
+            if second.max() > 255:
+                second = (second.astype(np.float32) / second.max()) * 255
+                second = np.clip(second, 0, 255).astype(np.uint8)
+
+            alpha = self.alpha_slider.get()
+            beta = self.beta_slider.get()
+            adjusted = cv2.convertScaleAbs(second, alpha=alpha, beta=beta)
+
+            rgb2 = cv2.cvtColor(adjusted, cv2.COLOR_BGR2RGB)
             pil_img2 = Image.fromarray(rgb2).resize((320, 240))
             tk_img2 = ImageTk.PhotoImage(pil_img2)
             self.second_image_label.config(image=tk_img2)

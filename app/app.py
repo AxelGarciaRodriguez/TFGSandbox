@@ -154,7 +154,7 @@ def projector_application(projector_screen, kinect, config: SharedConfig):
             final_image = colormap_with_contours
             projector_screen.update_window_image_calibrate(window_name="Projector Window", image=final_image)
 
-            rgb_image = kinect.get_image_calibrate(kinect_frame=KinectFrames.COLOR)
+            rgb_image = kinect.get_image_calibrate(kinect_frame=KinectFrames.COLOR, avoid_camera_matrix=True)
             with config.lock:
                 config.current_image = final_image
                 if rgb_image is not None:
