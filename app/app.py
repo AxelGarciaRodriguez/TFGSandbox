@@ -47,7 +47,8 @@ def projector_application(projector_screen, kinect, config: SharedConfig):
     previous_max_depth = config.get_value(ConfigControllerEnum.MAX_DEPTH.name)
 
     # GET FIRST DEPHT IMAGE FOR COMBINED IMAGES IN PROCESS
-    depth_image = kinect.get_image_calibrate(kinect_frame=KinectFrames.DEPTH, avoid_camera_focus=True)
+    depth_image = kinect.get_image_calibrate(kinect_frame=KinectFrames.DEPTH, avoid_camera_focus=True,
+                                             avoid_camera_matrix=True)
     depth_image_without_zeros = ImageTransformerDepth.remove_zeros(image=depth_image)
     depth_image_set_distance_datas = ImageTransformerDepth.set_data_between_distance(image=depth_image_without_zeros,
                                                                                      min_depth=previous_min_depth,
@@ -58,7 +59,8 @@ def projector_application(projector_screen, kinect, config: SharedConfig):
     # CREATE WINDOW SCREEN
     projector_screen.create_window_calibrate(window_name="Projector Window", image=previous_depth, fullscreen=True)
     while projector_screen.check_if_window_active(window_name="Projector Window"):
-        depth_image = kinect.get_image_calibrate(kinect_frame=KinectFrames.DEPTH, avoid_camera_focus=True)
+        depth_image = kinect.get_image_calibrate(kinect_frame=KinectFrames.DEPTH, avoid_camera_focus=True,
+                                                 avoid_camera_matrix=True)
         if depth_image is not None:
             config_values = config.get_values()
 
@@ -83,7 +85,7 @@ def projector_application(projector_screen, kinect, config: SharedConfig):
                 image=depth_image_no_zeros,
                 min_depth=config_values[ConfigControllerEnum.MIN_DEPTH.name],
                 max_depth=config_values[ConfigControllerEnum.MAX_DEPTH.name],
-                other_image=previous_depth, iterations=30)
+                other_image=previous_depth, iterations=5)
 
             # REMOVE NOISE (CHANGES < 5 MM)
             condition = (mask_with_neighbors == 0) & (np.abs(last_depth_image - previous_depth) < config_values[
