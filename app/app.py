@@ -49,10 +49,9 @@ def make_all_transforms_image(kinect, config, depth_image, previous_min_depth, p
     # REMOVE ERRORS IN IMAGE
     depth_image_no_zeros = ImageTransformerDepth.remove_zeros(image=depth_image)
 
-    # # APPLY CAMERA FOCUS
-    # depth_image_transformed = kinect.apply_camera_focus(kinect_frame=KinectFrames.DEPTH,
-    #                                                     image=depth_image_no_zeros)
-    depth_image_transformed = depth_image_no_zeros
+    # APPLY CAMERA FOCUS
+    depth_image_transformed = kinect.apply_camera_focus(kinect_frame=KinectFrames.DEPTH,
+                                                        image=depth_image_no_zeros)
 
     if previous_depth is None or config_values[ConfigControllerEnum.RESET_IMAGE.name] or previous_min_depth != \
             config_values[ConfigControllerEnum.MIN_DEPTH.name] or previous_max_depth != config_values[
@@ -72,7 +71,8 @@ def make_all_transforms_image(kinect, config, depth_image, previous_min_depth, p
             image=depth_image_transformed,
             min_depth=config_values[ConfigControllerEnum.MIN_DEPTH.name],
             max_depth=config_values[ConfigControllerEnum.MAX_DEPTH.name],
-            other_image=previous_depth, iterations=30)
+            kernel_shape=(7, 7),
+            other_image=previous_depth, iterations=15)
 
         # REMOVE NOISE (CHANGES < 5 MM)
         condition = (mask_with_neighbors == 0) & (np.abs(last_depth_image - previous_depth) < config_values[
@@ -109,12 +109,12 @@ def make_all_transforms_image(kinect, config, depth_image, previous_min_depth, p
     # SAVE PREVIOUS IMAGE
     previous_depth = ImageTransformerDepth.duplicate(image=last_depth_image)
 
-    # APPLY CAMERA FOCUS
-    depth_image_transformed = kinect.apply_camera_focus(kinect_frame=KinectFrames.DEPTH,
-                                                        image=depth_image_no_zeros)
+    # # APPLY CAMERA FOCUS
+    # depth_image_transformed = kinect.apply_camera_focus(kinect_frame=KinectFrames.DEPTH,
+    #                                                     image=last_depth_image)
 
     # NORMALIZE IMAGE
-    depth_image_normalized = ImageTransformerDepth.normalize_between_distance(image=depth_image_transformed,
+    depth_image_normalized = ImageTransformerDepth.normalize_between_distance(image=last_depth_image,
                                                                               min_depth=config_values[
                                                                                   ConfigControllerEnum.MIN_DEPTH.name],
                                                                               max_depth=config_values[
